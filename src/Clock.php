@@ -2,6 +2,8 @@
 
 declare(strict_types = 1);
 
+namespace Timvandendries\Clock;
+
 class Clock {
 
     public int $clockSize = 150;
