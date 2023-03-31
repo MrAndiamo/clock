@@ -4,6 +4,15 @@ declare(strict_types = 1);
 
 namespace Timvandendries\Clock;
 
+/**
+ * @property integer $clockSize
+ * @property integer $clockHandWidth
+ * @property string $clockHandMinuteColor
+ * @property string $clockHandHourColor
+ * @property string $clockHandSecondColor
+ *
+ *
+ */
 class Clock {
 
     public int $clockSize = 150;
@@ -12,7 +21,6 @@ class Clock {
     public string $clockHandMinuteColor = '#000000';
     public string $clockHandSecondColor = '#CC0000';
 
-
     public function showClock() : string {
 
         $css = self::getCSS();
@@ -20,7 +28,6 @@ class Clock {
         $html = self::getHTML();
         return $css . $html . $javascript;
     }
-
 
     private function getHTML() : string {
         return '<div class=\'clock\'>
