@@ -7,6 +7,8 @@ namespace Timvandendries\Clock;
 /**
  * @property integer $clockSize
  * @property integer $clockHandWidth
+ * @property integer $clockBorderWidth
+ * @property string $clockBorderColor
  * @property string $clockBackgroundColor
  * @property string $clockHandMinutesColor
  * @property string $clockHandHoursColor
@@ -18,6 +20,8 @@ class Clock {
 
     public int $clockSize = 150;
     public int $clockHandWidth = 2;
+    public int $clockBorderWidth = 1;
+    public string $clockBorderColor = '#000000';
     public string $clockBackgroundColor = '#FFFFFF';
     public string $clockHandHoursColor = '#000000';
     public string $clockHandMinutesColor = '#000000';
@@ -47,6 +51,8 @@ class Clock {
         $clockHandHeightHours = $clockHandHeight * 0.7;
         $clockHandHeightHoursTop = $clockHandHeight - $clockHandHeightHours + 10;
 
+        $clockBorder = $this->clockBorderWidth == 0 ? 'none' : $this->clockBorderWidth . 'px solid ' . $this->clockBorderColor;
+        
         return '<style>
                     .TD_clock {
                         position: relative;
@@ -54,6 +60,7 @@ class Clock {
                         width: ' . $this->clockSize .'px;
                         border-radius: 50%;
                         background-color: ' . $this->clockBackgroundColor . ';
+                        border: ' . $clockBorder . '
                     }
                     
                     .TD_clock div {
