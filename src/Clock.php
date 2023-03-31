@@ -15,8 +15,10 @@ namespace Timvandendries\Clock;
  */
 class Clock {
 
+
     public int $clockSize = 150;
     public int $clockHandWidth = 2;
+    public string $clockBackgroundColor = '#FFFFFF';
     public string $clockHandHourColor = '#000000';
     public string $clockHandMinuteColor = '#000000';
     public string $clockHandSecondColor = '#CC0000';
@@ -51,7 +53,7 @@ class Clock {
                         height: ' . $this->clockSize . 'px;
                         width: ' . $this->clockSize .'px;
                         border-radius: 50%;
-                        background: white;
+                        background: ' . $this->clockBackgroundColor . ';
                     }
                     
                     .clock div {
@@ -62,7 +64,6 @@ class Clock {
                         left: 50%;
                         /* UPDATED THIS TO FIXED: */
                         transform: translateX(50%);
-                        background: black;
                         transform: rotate(0deg);
                         transform-origin: bottom center;
                     }
