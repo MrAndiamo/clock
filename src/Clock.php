@@ -7,6 +7,7 @@ namespace Timvandendries\Clock;
 /**
  * @property integer $clockSize
  * @property integer $clockHandWidth
+ * @property string $clockBackgroundColor
  * @property string $clockHandMinuteColor
  * @property string $clockHandHourColor
  * @property string $clockHandSecondColor
@@ -14,7 +15,6 @@ namespace Timvandendries\Clock;
  *
  */
 class Clock {
-
 
     public int $clockSize = 150;
     public int $clockHandWidth = 2;
@@ -53,7 +53,7 @@ class Clock {
                         height: ' . $this->clockSize . 'px;
                         width: ' . $this->clockSize .'px;
                         border-radius: 50%;
-                        background: ' . $this->clockBackgroundColor . ';
+                        background-color: ' . $this->clockBackgroundColor . ';
                     }
                     
                     .clock div {
