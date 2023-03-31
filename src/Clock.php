@@ -8,9 +8,9 @@ namespace Timvandendries\Clock;
  * @property integer $clockSize
  * @property integer $clockHandWidth
  * @property string $clockBackgroundColor
- * @property string $clockHandMinuteColor
- * @property string $clockHandHourColor
- * @property string $clockHandSecondColor
+ * @property string $clockHandMinutesColor
+ * @property string $clockHandHoursColor
+ * @property string $clockHandSecondsColor
  *
  *
  */
@@ -19,9 +19,9 @@ class Clock {
     public int $clockSize = 150;
     public int $clockHandWidth = 2;
     public string $clockBackgroundColor = '#FFFFFF';
-    public string $clockHandHourColor = '#000000';
-    public string $clockHandMinuteColor = '#000000';
-    public string $clockHandSecondColor = '#CC0000';
+    public string $clockHandHoursColor = '#000000';
+    public string $clockHandMinutesColor = '#000000';
+    public string $clockHandSecondsColor = '#CC0000';
 
     public function showClock() : string {
 
@@ -31,11 +31,12 @@ class Clock {
         return $css . $html . $javascript;
     }
 
+
     private function getHTML() : string {
-        return '<div class=\'clock\'>
-                    <div id=\'hours\'></div>
-                    <div id=\'minutes\'></div>
-                    <div id=\'seconds\'></div>
+        return '<div class=\'TD_clock\'>
+                    <div id=\'TD_clock_hours\'></div>
+                    <div id=\'TD_clock_minutes\'></div>
+                    <div id=\'TD_clock_seconds\'></div>
                 </div>';
     }
 
@@ -43,12 +44,11 @@ class Clock {
     private function getCSS() : string {
 
         $clockHandHeight = ($this->clockSize / 2) - 10;
-        $clockHandHeightMinutes = $clockHandHeight * 0.7;
-        $clockHandHeightMinutesTop = $clockHandHeight - $clockHandHeightMinutes + 10;
-
+        $clockHandHeightHours = $clockHandHeight * 0.7;
+        $clockHandHeightHoursTop = $clockHandHeight - $clockHandHeightHours + 10;
 
         return '<style>
-                    .clock {
+                    .TD_clock {
                         position: relative;
                         height: ' . $this->clockSize . 'px;
                         width: ' . $this->clockSize .'px;
@@ -56,7 +56,7 @@ class Clock {
                         background-color: ' . $this->clockBackgroundColor . ';
                     }
                     
-                    .clock div {
+                    .TD_clock div {
                         position: absolute;
                         height: ' . $clockHandHeight . 'px;
                         width: ' . $this->clockHandWidth . 'px;
@@ -68,25 +68,23 @@ class Clock {
                         transform-origin: bottom center;
                     }
                     
-                    #hours {
-                        background-color: ' . $this->clockHandHourColor . ';
+                    #TD_clock_hours {
+                        background-color: ' . $this->clockHandMinutesColor . ';
+                        height: ' . $clockHandHeightHours . 'px;
+                        top: ' . $clockHandHeightHoursTop . 'px;
+                        
                     }
                     
-                    #minutes {
-                        background-color: ' . $this->clockHandMinuteColor . ';
-                        height: ' . $clockHandHeightMinutes . 'px;
-                        top: ' . $clockHandHeightMinutesTop . 'px;
+                    #TD_clock_minutes {
+                        background-color: ' . $this->clockHandMinutesColor . ';
                     }
                     
-                    #seconds {
-                        background-color: ' . $this->clockHandSecondColor . ';
+                    #TD_clock_seconds {
+                        background-color: ' . $this->clockHandSecondsColor . ';
                     }
                 </style>';
 
-
-
     }
-
 
 
     private static function getJavascript() {
@@ -94,9 +92,9 @@ class Clock {
                     const updateInMS = 1000;
             
                     const clock = document.getElementsByClassName(\'clock\')[0];
-                    const htmHours = document.getElementById(\'hours\');
-                    const htmMinutes = document.getElementById(\'minutes\');
-                    const htmSeconds = document.getElementById(\'seconds\');
+                    const htmHours = document.getElementById(\'TD_clock_hours\');
+                    const htmMinutes = document.getElementById(\'TD_clock_minutes\');
+                    const htmSeconds = document.getElementById(\'TD_clock_seconds\');
             
                     startTimer();
             
