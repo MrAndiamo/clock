@@ -44,7 +44,6 @@ class Clock {
                 </div>';
     }
 
-
     private function getCSS() : string {
 
         $clockHandHeight = ($this->clockSize / 2) - 10;
@@ -52,51 +51,55 @@ class Clock {
         $clockHandHeightHoursTop = $clockHandHeight - $clockHandHeightHours + 10;
 
         $clockBorder = $this->clockBorderWidth == 0 ? 'none' : $this->clockBorderWidth . 'px solid ' . $this->clockBorderColor;
-        
-        return '<style>
-                    .TD_clock {
-                        position: relative;
-                        height: ' . $this->clockSize . 'px;
-                        width: ' . $this->clockSize .'px;
-                        border-radius: 50%;
-                        background-color: ' . $this->clockBackgroundColor . ';
-                        border: ' . $clockBorder . '
-                    }
-                    
-                    .TD_clock div {
-                        position: absolute;
-                        height: ' . $clockHandHeight . 'px;
-                        width: ' . $this->clockHandWidth . 'px;
-                        top: 10px;
-                        left: 50%;
-                        /* UPDATED THIS TO FIXED: */
-                        transform: translateX(50%);
-                        transform: rotate(0deg);
-                        transform-origin: bottom center;
-                    }
-                    
-                    #TD_clock_hours {
-                        background-color: ' . $this->clockHandMinutesColor . ';
-                        height: ' . $clockHandHeightHours . 'px;
-                        top: ' . $clockHandHeightHoursTop . 'px;
-                        
-                    }
-                    
-                    #TD_clock_minutes {
-                        background-color: ' . $this->clockHandMinutesColor . ';
-                    }
-                    
-                    #TD_clock_seconds {
-                        background-color: ' . $this->clockHandSecondsColor . ';
-                    }
-                </style>';
+
+        $TD_clock_CSS = '.TD_clock {
+                            position: relative;
+                            height: ' . $this->clockSize . 'px;
+                            width: ' . $this->clockSize .'px;
+                            background-color: ' . $this->clockBackgroundColor . ';
+                            border: ' . $clockBorder . '
+                            border-radius: 50%;
+                        }';
+
+        $TD_clock_div_CSS = '.TD_clock div {
+                                position: absolute;
+                                top: 10px;
+                                left: 50%;
+                                height: ' . $clockHandHeight . 'px;
+                                width: ' . $this->clockHandWidth . 'px;
+                                transform: translateX(50%);
+                                transform: rotate(0deg);
+                                transform-origin: bottom center;
+                            }';
+
+        $TD_clock_hours = '#TD_clock_hours {
+                                top: ' . $clockHandHeightHoursTop . 'px;
+                                background-color: ' . $this->clockHandMinutesColor . ';
+                                height: ' . $clockHandHeightHours . 'px;
+                                
+                            }';
+
+        $TD_clock_minutes = '#TD_clock_minutes {
+                                background-color: ' . $this->clockHandMinutesColor . ';
+                            }';
+
+        $TD_clock_seconds = '#TD_clock_seconds {
+                                background-color: ' . $this->clockHandSecondsColor . ';
+                            }';
+
+        return '<style>' .
+            $TD_clock_CSS .
+            $TD_clock_div_CSS .
+            $TD_clock_hours .
+            $TD_clock_minutes .
+            $TD_clock_seconds .
+            '</style>';
 
     }
 
 
     private static function getJavascript() {
-        return '<script>
-                    const updateInMS = 1000;
+        $javascript = 'const updateInMS = 1000;
             
                     const clock = document.getElementsByClassName(\'clock\')[0];
                     const htmHours = document.getElementById(\'TD_clock_hours\');
@@ -126,8 +129,9 @@ class Clock {
             
                             tick();
                         }, updateInMS);
-                    }
-                </script>';
+                    }';
+
+        return '<script>' . $javascript . '</script>';
     }
 
 }
