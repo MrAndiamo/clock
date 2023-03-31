@@ -13,7 +13,7 @@ class Clock {
     public string $clockHandSecondColor = '#CC0000';
 
 
-    public function showTimer() : string {
+    public function showClock() : string {
 
         $css = self::getCSS();
         $javascript = self::getJavascript();
