@@ -13,7 +13,7 @@ namespace Timvandendries\Clock;
  * @property string $clockBorderGradientMiddle
  * @property string $clockBorderGradientEnd
  * @property boolean $clockCenterCircle
- * @property integer $clockCenterCircleSize
+ * @property integer|float $clockCenterCircleSize
  * @property string $clockCenterCircleColor
  */
 class Clock {
@@ -26,7 +26,7 @@ class Clock {
     public string $clockBorderGradientMiddle = "#CCCCCC";
     public string $clockBorderGradientEnd = "#000000";
     public bool $clockCenterCircle = TRUE;
-    public int $clockCenterCircleSize = 1;
+    public int|float $clockCenterCircleSize = 1;
     public string $clockCenterCircleColor = '#000000';
 
     public function showClock() : string {
