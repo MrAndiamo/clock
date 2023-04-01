@@ -9,6 +9,7 @@ namespace Timvandendries\Clock;
  * @property boolean $numbers
  * @property string $numbersColor
  * @property boolean $border
+ * @property integer $borderSize
  * @property boolean $handHours
  * @property string $handHoursColor
  * @property boolean $handMinutes
@@ -28,6 +29,7 @@ class Clock {
     public bool $numbers = TRUE;
     public string $numbersColor = '#000000';
     public bool $border = TRUE;
+    public int $borderSize = 5;
     public bool $handHours = TRUE;
     public string $handHoursColor = '#000000';
     public bool $handMinutes = TRUE;
@@ -74,7 +76,7 @@ class Clock {
                         
                         ' . $border . '    
                         ctx.strokeStyle = grad;
-                        ctx.lineWidth = radius*0.1;
+                        ctx.lineWidth = ' . $this->borderSize . ';
                         ctx.stroke();
                     }';
 
