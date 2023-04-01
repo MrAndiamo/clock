@@ -10,6 +10,7 @@ namespace Timvandendries\Clock;
  * @property string $numbersColor
  * @property boolean $border
  * @property integer $borderSize
+ * @property integer $handSize
  * @property boolean $handHours
  * @property string $handHoursColor
  * @property boolean $handMinutes
@@ -30,6 +31,7 @@ class Clock {
     public string $numbersColor = '#000000';
     public bool $border = TRUE;
     public int $borderSize = 5;
+    public int $handSize = 5;
     public bool $handHours = TRUE;
     public string $handHoursColor = '#000000';
     public bool $handMinutes = TRUE;
@@ -37,7 +39,7 @@ class Clock {
     public bool $handSeconds = TRUE;
     public string $handSecondsColor = '#CC0000';
     public string $borderGradientStart = "#000000";
-    public string $borderGradientMiddle = "#CCCCCC";
+    public string $borderGradientMiddle = "#000000";
     public string $borderGradientEnd = "#000000";
     public bool $centerCircle = TRUE;
     public int|float $centerCircleSize = 1;
@@ -80,11 +82,11 @@ class Clock {
                         ctx.stroke();
                     }';
 
-
-        $circleSize = str_replace('.', '', (string) $this->centerCircleSize);
+        $circleSize = $this->centerCircleSize / 2;
+        $size = str_replace('.', '', (string) $circleSize);
 
         $circle = $this->centerCircle ?
-            'ctx.arc(0, 0, radius * 0.' . $circleSize . ', 0, 2 * Math.PI);
+            'ctx.arc(0, 0, radius * 0.' . $size . ', 0, 2 * Math.PI);
              ctx.fillStyle = "' . $this->centerCircleColor . '";' : '';
 
         $drawNumbers = 'function drawNumbers(ctx, radius) {
@@ -119,11 +121,11 @@ class Clock {
                         var second = now.getSeconds();
                         hour = hour%12;
                         hour = (hour*Math.PI/6)+(minute*Math.PI/(6*60))+(second*Math.PI/(360*60));
-                        drawHand(ctx, hour, radius*0.5, radius*0.07, "' . $this->handHoursColor . '");
+                        drawHand(ctx, hour, radius*0.5, ' . $this->handSize . ', "' . $this->handHoursColor . '");
                         minute = (minute*Math.PI/30)+(second*Math.PI/(30*60));
-                        drawHand(ctx, minute, radius*0.8, radius*0.07, "' . $this->handMinutesColor . '");
+                        drawHand(ctx, minute, radius*0.8, ' . $this->handSize . ', "' . $this->handMinutesColor . '");
                         second = (second*Math.PI/30);
-                        drawHand(ctx, second, radius*0.9, radius*0.02, "' . $this->handSecondsColor . '");
+                        drawHand(ctx, second, radius*0.9, ' . $this->handSize / 2 . ', "' . $this->handSecondsColor . '");
                     }';
 
         $drawHand = 'function drawHand(ctx, pos, length, width, color) {
