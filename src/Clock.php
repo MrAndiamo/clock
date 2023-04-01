@@ -6,20 +6,18 @@ namespace Timvandendries\Clock;
 
 /**
  * @property integer $size
- * @property string $backgroundColor
  * @property boolean $numbers
  * @property string $numbersColor
  * @property boolean $border
- * @property integer $borderSize
- * @property string $borderGradientStart
- * @property string $borderGradientMiddle
- * @property string $borderGradientEnd
  * @property boolean $handHours
  * @property string $handHoursColor
  * @property boolean $handMinutes
  * @property string $handMinutesColor
  * @property boolean $handSeconds
  * @property string $handSecondsColor
+ * @property string $borderGradientStart
+ * @property string $borderGradientMiddle
+ * @property string $borderGradientEnd
  * @property boolean $centerCircle
  * @property integer|float $centerCircleSize
  * @property string $centerCircleColor
@@ -27,24 +25,18 @@ namespace Timvandendries\Clock;
 class Clock {
 
     public int $size = 200;
-    public string $backgroundColor = '#FFFFFF';
-
     public bool $numbers = TRUE;
     public string $numbersColor = '#000000';
-
     public bool $border = TRUE;
-    public int $borderSize = 5;
-    public string $borderGradientStart = "#000000";
-    public string $borderGradientMiddle = "#CCCCCC";
-    public string $borderGradientEnd = "#000000";
-
     public bool $handHours = TRUE;
     public string $handHoursColor = '#000000';
     public bool $handMinutes = TRUE;
     public string $handMinutesColor = '#000000';
     public bool $handSeconds = TRUE;
     public string $handSecondsColor = '#CC0000';
-
+    public string $borderGradientStart = "#000000";
+    public string $borderGradientMiddle = "#CCCCCC";
+    public string $borderGradientEnd = "#000000";
     public bool $centerCircle = TRUE;
     public int|float $centerCircleSize = 1;
     public string $centerCircleColor = '#000000';
@@ -57,7 +49,7 @@ class Clock {
                    var ctx = canvas.getContext("2d");
                    var radius = canvas.height / 2;
                    ctx.translate(radius, radius);
-                   radius = radius * 0.8;';
+                   radius = radius * 0.90;';
 
         $interval = 'setInterval(drawClock, 1000);';
 
@@ -68,7 +60,7 @@ class Clock {
                      }';
 
         $border = $this->border ?
-            'grad = ctx.createRadialGradient(0, 0 , radius * 0.95, 0, 0, radius * 1.5);
+            'grad = ctx.createRadialGradient(0, 0 ,radius * 0.95, 0, 0, radius * 1.05);
             grad.addColorStop(0, "' . $this->borderGradientStart . '");
             grad.addColorStop(0.5, "' . $this->borderGradientMiddle . '");
             grad.addColorStop(1, "' . $this->borderGradientEnd . '");' : '';
@@ -77,11 +69,12 @@ class Clock {
                         var grad;
                         ctx.beginPath();
                         ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-                        ctx.fillStyle = "' . $this->backgroundColor . '";
-                        ctx.fill();           
+                        ctx.fillStyle = "white";
+                        ctx.fill();
+                        
                         ' . $border . '    
                         ctx.strokeStyle = grad;
-                        ctx.lineWidth = ' . $this->borderSize . ';
+                        ctx.lineWidth = radius*0.1;
                         ctx.stroke();
                     }';
 
