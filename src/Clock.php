@@ -6,8 +6,8 @@ namespace Timvandendries\Clock;
 
 /**
  * @property integer $clockSize
- * @property boolean $clockFaceNumber
- * @property string $clockFaceNumberColor
+ * @property boolean $clockNumbers
+ * @property string $clockNumbersColor
  * @property boolean $clockBorder
  * @property string $clockBorderGradientStart
  * @property string $clockBorderGradientMiddle
@@ -19,8 +19,8 @@ namespace Timvandendries\Clock;
 class Clock {
 
     public int $clockSize = 200;
-    public bool $clockFaceNumber = TRUE;
-    public string $clockFaceNumberColor = '#000000';
+    public bool $clockNumbers = TRUE;
+    public string $clockNumbersColor = '#000000';
     public bool $clockBorder = TRUE;
     public string $clockBorderGradientStart = "#000000";
     public string $clockBorderGradientMiddle = "#CCCCCC";
@@ -43,7 +43,7 @@ class Clock {
 
         $drawClock = 'function drawClock() {
                         drawFace(ctx, radius);
-                        ' . ($this->clockFaceNumber ? 'drawNumbers(ctx, radius);' : '') . '
+                        ' . ($this->clockNumbers ? 'drawNumbers(ctx, radius);' : '') . '
                         drawTime(ctx, radius);
                      }';
 
@@ -82,7 +82,7 @@ class Clock {
                             ctx.font = radius * 0.15 + "px arial";
                             ctx.textBaseline = "middle";
                             ctx.textAlign = "center";
-                            ctx.fillStyle = "' . $this->clockFaceNumberColor . '";
+                            ctx.fillStyle = "' . $this->clockNumbersColor . '";
                             for(num = 1; num < 13; num++){
                                 ang = num * Math.PI / 6;
                                 ctx.rotate(ang);
