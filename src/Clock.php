@@ -66,8 +66,10 @@ class Clock {
                     }';
 
 
+        $circleSize = is_integer($this->clockCenterCircleSize) ? $this->clockCenterCircleSize : str_replace('.', '', (string) $this->clockCenterCircleSize);
+        $drawFace .= 'console.log(' . $circleSize . ');';
         $clockCircle = $this->clockCenterCircle ?
-            'ctx.arc(0, 0, radius * 0.' . $this->clockCenterCircleSize . ', 0, 2 * Math.PI);
+            'ctx.arc(0, 0, radius * 0.' . $circleSize . ', 0, 2 * Math.PI);
              ctx.fillStyle = "' . $this->clockCenterCircleColor . '";' : '';
 
         $drawNumbers = 'function drawNumbers(ctx, radius) {
