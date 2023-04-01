@@ -64,9 +64,7 @@ class Clock {
         $border = '';
         if ($this->border) {
             $border = $this->borderColor ?
-                'ctx.strokeStyle = "' . $this->borderColor . '";
-                ctx.lineWidth = radius * 0.1;
-                ctx.stroke();'
+                'grad = "' . $this->borderColor . '";'
                 :
                 'grad = ctx.createRadialGradient(0, 0 , radius * 0.95, 0, 0, radius * 1.05);
                 grad.addColorStop(0, "' . $this->borderGradientStart . '");
