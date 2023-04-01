@@ -6,28 +6,32 @@ namespace Timvandendries\Clock;
 
 /**
  * @property integer $clockSize
- * 
- *
- *
+ * @property boolean $clockFaceNumber
+ * @property string $clockFaceNumberColor
+ * @property boolean $clockBorder
+ * @property string $clockBorderGradientStart
+ * @property string $clockBorderGradientMiddle
+ * @property string $clockBorderGradientEnd
+ * @property boolean $clockFaceCenterCircle
+ * @property integer $clockFaceCenterCircleSize
+ * @property string $clockFaceCenterCircleColor
  */
 class Clock {
 
-    public int $clockSize = 300;
+    public int $clockSize = 200;
     public bool $clockFaceNumber = TRUE;
     public string $clockFaceNumberColor = '#000000';
-    public bool $clockFaceBorder = TRUE;
-    public string $clockFaceBorderGradientStart = "#000000";
-    public string $clockFaceBorderGradientMiddle = "#CCCCCC";
-    public string $clockFaceBorderGradientEnd = "#000000";
+    public bool $clockBorder = TRUE;
+    public string $clockBorderGradientStart = "#000000";
+    public string $clockBorderGradientMiddle = "#CCCCCC";
+    public string $clockBorderGradientEnd = "#000000";
     public bool $clockFaceCenterCircle = TRUE;
     public int $clockFaceCenterCircleSize = 1;
     public string $clockFaceCenterCircleColor = '#000000';
 
     public function showClock() : string {
 
-
         $canvasHTML = '<canvas id="canvas" width="' . $this->clockSize . '" height="' . $this->clockSize . '"></canvas>';
-
 
         $canvas = 'var canvas = document.getElementById("canvas");
                    var ctx = canvas.getContext("2d");
@@ -41,16 +45,16 @@ class Clock {
                         drawFace(ctx, radius);
                         ' . ($this->clockFaceNumber ? 'drawNumbers(ctx, radius);' : '') . '
                         drawTime(ctx, radius);
-                    }';
+                     }';
 
-        $border = $this->clockFaceBorder ?
+        $border = $this->clockBorder ?
             'grad = ctx.createRadialGradient(0, 0 ,radius * 0.95, 0, 0, radius * 1.05);
-                        grad.addColorStop(0, "' . $this->clockFaceBorderGradientStart . '");
-                        grad.addColorStop(0.5, "' . $this->clockFaceBorderGradientMiddle . '");
-                        grad.addColorStop(1, "' . $this->clockFaceBorderGradientEnd . '");
-                        ctx.strokeStyle = grad;
-                        ctx.lineWidth = radius*0.1;
-                        ctx.stroke();' : '';
+            grad.addColorStop(0, "' . $this->clockBorderGradientStart . '");
+            grad.addColorStop(0.5, "' . $this->clockBorderGradientMiddle . '");
+            grad.addColorStop(1, "' . $this->clockBorderGradientEnd . '");
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = radius*0.1;
+            ctx.stroke();' : '';
 
         $drawFace = 'function drawFace(ctx, radius) { 
                         var grad;
@@ -64,7 +68,7 @@ class Clock {
 
         $centerCircle = $this->clockFaceCenterCircle ?
             'ctx.arc(0, 0, radius * 0.' . $this->clockFaceCenterCircleSize . ', 0, 2 * Math.PI);
-                         ctx.fillStyle = "' . $this->clockFaceCenterCircleColor . '";' : '';
+             ctx.fillStyle = "' . $this->clockFaceCenterCircleColor . '";' : '';
 
         $drawNumbers = 'function drawNumbers(ctx, radius) {
                             // draw middle circle and set color
@@ -90,7 +94,6 @@ class Clock {
                                 ctx.rotate(-ang);
                             }
                     }';
-
 
         $drawTime = 'function drawTime(ctx, radius){
                         var now = new Date();
