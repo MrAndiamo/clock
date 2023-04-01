@@ -124,13 +124,13 @@ class Clock {
                     }';
 
         $drawHand = 'function drawHand(ctx, pos, length, width, color) {
-                        ctx.fillStyle = color;
                         ctx.beginPath();
                         ctx.lineWidth = width;
                         ctx.lineCap = "round";
                         ctx.moveTo(0,0);
                         ctx.rotate(pos);
                         ctx.lineTo(0, -length);
+                        ctx.strokeStyle = color;
                         ctx.stroke();
                         ctx.rotate(-pos);
                     }';
