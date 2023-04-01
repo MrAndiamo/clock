@@ -12,9 +12,9 @@ namespace Timvandendries\Clock;
  * @property string $clockBorderGradientStart
  * @property string $clockBorderGradientMiddle
  * @property string $clockBorderGradientEnd
- * @property boolean $clockFaceCenterCircle
- * @property integer $clockFaceCenterCircleSize
- * @property string $clockFaceCenterCircleColor
+ * @property boolean $clockCenterCircle
+ * @property integer $clockCenterCircleSize
+ * @property string $clockCenterCircleColor
  */
 class Clock {
 
@@ -25,9 +25,9 @@ class Clock {
     public string $clockBorderGradientStart = "#000000";
     public string $clockBorderGradientMiddle = "#CCCCCC";
     public string $clockBorderGradientEnd = "#000000";
-    public bool $clockFaceCenterCircle = TRUE;
-    public int $clockFaceCenterCircleSize = 1;
-    public string $clockFaceCenterCircleColor = '#000000';
+    public bool $clockCenterCircle = TRUE;
+    public int $clockCenterCircleSize = 1;
+    public string $clockCenterCircleColor = '#000000';
 
     public function showClock() : string {
 
@@ -66,14 +66,14 @@ class Clock {
                     }';
 
 
-        $centerCircle = $this->clockFaceCenterCircle ?
-            'ctx.arc(0, 0, radius * 0.' . $this->clockFaceCenterCircleSize . ', 0, 2 * Math.PI);
-             ctx.fillStyle = "' . $this->clockFaceCenterCircleColor . '";' : '';
+        $clockCircle = $this->clockCenterCircle ?
+            'ctx.arc(0, 0, radius * 0.' . $this->clockCenterCircleSize . ', 0, 2 * Math.PI);
+             ctx.fillStyle = "' . $this->clockCenterCircleColor . '";' : '';
 
         $drawNumbers = 'function drawNumbers(ctx, radius) {
                             // draw middle circle and set color
                             ctx.beginPath();
-                            ' . $centerCircle . '
+                            ' . $clockCircle . '
                             ctx.fill();
                               
                             // draw numbers
