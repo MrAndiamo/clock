@@ -55,8 +55,6 @@ class Clock {
                    ctx.translate(radius, radius);
                    radius = radius * 0.90;';
 
-        $interval = 'setInterval(drawClock, 1000);';
-
         $drawClock = 'function drawClock() {
                         drawFace(ctx, radius);
                         ' . ($this->numbers ? 'drawNumbers(ctx, radius);' : '') . '
@@ -64,10 +62,10 @@ class Clock {
                      }';
 
         $border = $this->border ?
-            'grad = ctx.createRadialGradient(0, 0 ,radius * 0.95, 0, 0, radius * 1.05);
-            grad.addColorStop(0, "' . $this->borderGradientStart . '");
-            grad.addColorStop(0.5, "' . $this->borderGradientMiddle . '");
-            grad.addColorStop(1, "' . $this->borderGradientEnd . '");' : '';
+                    'grad = ctx.createRadialGradient(0, 0 ,radius * 0.95, 0, 0, radius * 1.05);
+                    grad.addColorStop(0, "' . $this->borderGradientStart . '");
+                    grad.addColorStop(0.5, "' . $this->borderGradientMiddle . '");
+                    grad.addColorStop(1, "' . $this->borderGradientEnd . '");' : '';
 
         $drawFace = 'function drawFace(ctx, radius) { 
                         var grad;
@@ -86,16 +84,16 @@ class Clock {
         $size = str_replace('.', '', (string) $circleSize);
 
         $circle = $this->centerCircle ?
-            'ctx.arc(0, 0, radius * 0.' . $size . ', 0, 2 * Math.PI);
-             ctx.fillStyle = "' . $this->centerCircleColor . '";' : '';
+                    'ctx.arc(0, 0, radius * 0.' . $size . ', 0, 2 * Math.PI);
+                     ctx.fillStyle = "' . $this->centerCircleColor . '";' : '';
 
         $drawNumbers = 'function drawNumbers(ctx, radius) {
-                            // draw middle circle and set color
+                            // Middle circle
                             ctx.beginPath();
                             ' . $circle . '
                             ctx.fill();
                               
-                            // draw numbers
+                            // Numbers
                             var ang;
                             var num;
                             ctx.font = radius * 0.15 + "px arial";
@@ -120,10 +118,13 @@ class Clock {
                         var minute = now.getMinutes();
                         var second = now.getSeconds();
                         hour = hour%12;
+                        
                         hour = (hour*Math.PI/6)+(minute*Math.PI/(6*60))+(second*Math.PI/(360*60));
                         drawHand(ctx, hour, radius*0.5, ' . $this->handSize . ', "' . $this->handHoursColor . '");
+                        
                         minute = (minute*Math.PI/30)+(second*Math.PI/(30*60));
                         drawHand(ctx, minute, radius*0.8, ' . $this->handSize . ', "' . $this->handMinutesColor . '");
+                        
                         second = (second*Math.PI/30);
                         drawHand(ctx, second, radius*0.9, ' . $this->handSize / 2 . ', "' . $this->handSecondsColor . '");
                     }';
@@ -140,7 +141,9 @@ class Clock {
                         ctx.rotate(-pos);
                     }';
 
-        $javascript = $canvas . $interval . $drawClock . $drawFace . $drawNumbers . $drawTime . $drawHand;
+        $interval = 'setInterval(drawClock, 1000);';
+
+        $javascript = $canvas . $drawClock . $drawFace . $drawNumbers . $drawTime . $drawHand . $interval;
 
         return $canvasHTML . '<script>' . $javascript . '</script>';
 
