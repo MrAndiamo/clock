@@ -6,7 +6,7 @@ namespace Timvandendries\Clock;
 
 /**
  * @property integer $clockSize
- *
+ * 
  *
  *
  */
