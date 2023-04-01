@@ -15,7 +15,6 @@ namespace Timvandendries\Clock;
  * @property string $handMinutesColor
  * @property boolean $handSeconds
  * @property string $handSecondsColor
- * @property string $borderColor
  * @property string $borderGradientStart
  * @property string $borderGradientMiddle
  * @property string $borderGradientEnd
@@ -35,7 +34,6 @@ class Clock {
     public string $handMinutesColor = '#000000';
     public bool $handSeconds = TRUE;
     public string $handSecondsColor = '#CC0000';
-    public string $borderColor = '#000000';
     public string $borderGradientStart = "#000000";
     public string $borderGradientMiddle = "#CCCCCC";
     public string $borderGradientEnd = "#000000";
@@ -61,21 +59,11 @@ class Clock {
                         drawTime(ctx, radius);
                      }';
 
-        $border = '';
-        if ($this->border) {
-            $border = $this->borderColor ?
-                'grad = "' . $this->borderColor . '";'
-                :
-                'grad = ctx.createRadialGradient(0, 0 , radius * 0.95, 0, 0, radius * 1.05);
-                grad.addColorStop(0, "' . $this->borderGradientStart . '");
-                grad.addColorStop(0.5, "' . $this->borderGradientMiddle . '");
-                grad.addColorStop(1, "' . $this->borderGradientEnd . '");';
-
-            $border .= 'ctx.strokeStyle = grad;
-                        ctx.lineWidth = radius * 0.1; 
-                        ctx.stroke();';
-        }
-
+        $border = $this->border ?
+            'grad = ctx.createRadialGradient(0, 0 ,radius * 0.95, 0, 0, radius * 1.05);
+            grad.addColorStop(0, "' . $this->borderGradientStart . '");
+            grad.addColorStop(0.5, "' . $this->borderGradientMiddle . '");
+            grad.addColorStop(1, "' . $this->borderGradientEnd . '");' : '';
 
         $drawFace = 'function drawFace(ctx, radius) { 
                         var grad;
@@ -83,7 +71,11 @@ class Clock {
                         ctx.arc(0, 0, radius, 0, 2 * Math.PI);
                         ctx.fillStyle = "white";
                         ctx.fill();
-                        ' . $border . '     
+                        
+                        ' . $border . '    
+                        ctx.strokeStyle = grad;
+                        ctx.lineWidth = radius*0.1;
+                        ctx.stroke();
                     }';
 
 
