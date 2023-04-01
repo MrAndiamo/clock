@@ -5,45 +5,45 @@ declare(strict_types = 1);
 namespace Timvandendries\Clock;
 
 /**
- * @property integer $clockSize
- * @property boolean $clockNumbers
- * @property string $clockNumbersColor
- * @property boolean $clockBorder
- * @property boolean $clockHandHours
- * @property string $clockHandHoursColor
- * @property boolean $clockHandMinutes
- * @property string $clockHandMinutesColor
- * @property boolean $clockHandSeconds
- * @property string $clockHandSecondsColor
- * @property string $clockBorderGradientStart
- * @property string $clockBorderGradientMiddle
- * @property string $clockBorderGradientEnd
- * @property boolean $clockCenterCircle
- * @property integer|float $clockCenterCircleSize
- * @property string $clockCenterCircleColor
+ * @property integer $size
+ * @property boolean $numbers
+ * @property string $numbersColor
+ * @property boolean $border
+ * @property boolean $handHours
+ * @property string $handHoursColor
+ * @property boolean $handMinutes
+ * @property string $handMinutesColor
+ * @property boolean $handSeconds
+ * @property string $handSecondsColor
+ * @property string $borderGradientStart
+ * @property string $borderGradientMiddle
+ * @property string $borderGradientEnd
+ * @property boolean $centerCircle
+ * @property integer|float $centerCircleSize
+ * @property string $centerCircleColor
  */
 class Clock {
 
-    public int $clockSize = 200;
-    public bool $clockNumbers = TRUE;
-    public string $clockNumbersColor = '#000000';
-    public bool $clockBorder = TRUE;
-    public bool $clockHandHours = TRUE;
-    public string $clockHandHoursColor = '#000000';
-    public bool $clockHandMinutes = TRUE;
-    public string $clockHandMinutesColor = '#000000';
-    public bool $clockHandSeconds = TRUE;
-    public string $clockHandSecondsColor = '#CC0000';
-    public string $clockBorderGradientStart = "#000000";
-    public string $clockBorderGradientMiddle = "#CCCCCC";
-    public string $clockBorderGradientEnd = "#000000";
-    public bool $clockCenterCircle = TRUE;
-    public int|float $clockCenterCircleSize = 1;
-    public string $clockCenterCircleColor = '#000000';
+    public int $size = 200;
+    public bool $numbers = TRUE;
+    public string $numbersColor = '#000000';
+    public bool $border = TRUE;
+    public bool $handHours = TRUE;
+    public string $handHoursColor = '#000000';
+    public bool $handMinutes = TRUE;
+    public string $handMinutesColor = '#000000';
+    public bool $handSeconds = TRUE;
+    public string $handSecondsColor = '#CC0000';
+    public string $borderGradientStart = "#000000";
+    public string $borderGradientMiddle = "#CCCCCC";
+    public string $borderGradientEnd = "#000000";
+    public bool $centerCircle = TRUE;
+    public int|float $centerCircleSize = 1;
+    public string $centerCircleColor = '#000000';
 
     public function showClock() : string {
 
-        $canvasHTML = '<canvas id="canvas" width="' . $this->clockSize . '" height="' . $this->clockSize . '"></canvas>';
+        $canvasHTML = '<canvas id="canvas" width="' . $this->size . '" height="' . $this->size . '"></canvas>';
 
         $canvas = 'var canvas = document.getElementById("canvas");
                    var ctx = canvas.getContext("2d");
@@ -55,15 +55,15 @@ class Clock {
 
         $drawClock = 'function drawClock() {
                         drawFace(ctx, radius);
-                        ' . ($this->clockNumbers ? 'drawNumbers(ctx, radius);' : '') . '
+                        ' . ($this->numbers ? 'drawNumbers(ctx, radius);' : '') . '
                         drawTime(ctx, radius);
                      }';
 
-        $border = $this->clockBorder ?
+        $border = $this->border ?
             'grad = ctx.createRadialGradient(0, 0 ,radius * 0.95, 0, 0, radius * 1.05);
-            grad.addColorStop(0, "' . $this->clockBorderGradientStart . '");
-            grad.addColorStop(0.5, "' . $this->clockBorderGradientMiddle . '");
-            grad.addColorStop(1, "' . $this->clockBorderGradientEnd . '");
+            grad.addColorStop(0, "' . $this->borderGradientStart . '");
+            grad.addColorStop(0.5, "' . $this->borderGradientMiddle . '");
+            grad.addColorStop(1, "' . $this->borderGradientEnd . '");
             ctx.strokeStyle = grad;
             ctx.lineWidth = radius*0.1;
             ctx.stroke();' : '';
@@ -78,16 +78,16 @@ class Clock {
                     }';
 
 
-        $circleSize = str_replace('.', '', (string) $this->clockCenterCircleSize);
+        $circleSize = str_replace('.', '', (string) $this->centerCircleSize);
 
-        $clockCircle = $this->clockCenterCircle ?
+        $circle = $this->centerCircle ?
             'ctx.arc(0, 0, radius * 0.' . $circleSize . ', 0, 2 * Math.PI);
-             ctx.fillStyle = "' . $this->clockCenterCircleColor . '";' : '';
+             ctx.fillStyle = "' . $this->centerCircleColor . '";' : '';
 
         $drawNumbers = 'function drawNumbers(ctx, radius) {
                             // draw middle circle and set color
                             ctx.beginPath();
-                            ' . $clockCircle . '
+                            ' . $circle . '
                             ctx.fill();
                               
                             // draw numbers
@@ -96,7 +96,7 @@ class Clock {
                             ctx.font = radius * 0.15 + "px arial";
                             ctx.textBaseline = "middle";
                             ctx.textAlign = "center";
-                            ctx.fillStyle = "' . $this->clockNumbersColor . '";
+                            ctx.fillStyle = "' . $this->numbersColor . '";
                             for(num = 1; num < 13; num++){
                                 ang = num * Math.PI / 6;
                                 ctx.rotate(ang);
@@ -116,11 +116,11 @@ class Clock {
                         var second = now.getSeconds();
                         hour = hour%12;
                         hour = (hour*Math.PI/6)+(minute*Math.PI/(6*60))+(second*Math.PI/(360*60));
-                        drawHand(ctx, hour, radius*0.5, radius*0.07, "' . $this->clockHandHoursColor . '");
+                        drawHand(ctx, hour, radius*0.5, radius*0.07, "' . $this->handHoursColor . '");
                         minute = (minute*Math.PI/30)+(second*Math.PI/(30*60));
-                        drawHand(ctx, minute, radius*0.8, radius*0.07, "' . $this->clockHandMinutesColor . '");
+                        drawHand(ctx, minute, radius*0.8, radius*0.07, "' . $this->handMinutesColor . '");
                         second = (second*Math.PI/30);
-                        drawHand(ctx, second, radius*0.9, radius*0.02, "' . $this->clockHandSecondsColor . '");
+                        drawHand(ctx, second, radius*0.9, radius*0.02, "' . $this->handSecondsColor . '");
                     }';
 
         $drawHand = 'function drawHand(ctx, pos, length, width, color) {
