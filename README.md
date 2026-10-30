@@ -1,6 +1,6 @@
 # Clock
 
-Analog, digital and count-down bar clocks for any web page. You can use one display, two, or all three, set up with a single options object. `clock.js` has no dependencies and works in plain HTML. A small PHP class is included for Composer projects.
+Analog, digital and count-down bar clocks for any web page, with an optional alarm. You can use one display, two, or all three, set up with a single options object. `clock.js` has no dependencies and works in plain HTML. A small PHP class is included for Composer projects.
 
 Open **`index.html`** for a live overview of all examples.
 
@@ -8,6 +8,7 @@ Open **`index.html`** for a live overview of all examples.
 - [The three displays](#the-three-displays)
 - [Combining displays](#combining-displays)
 - [Options](#options): [general](#general), [analog](#analog), [digital](#digital), [bars](#bars)
+- [Alarm](#alarm)
 - [Colors and themes](#colors-and-themes)
 - [JavaScript API](#javascript-api)
 - [PHP](#php)
@@ -119,8 +120,9 @@ Invalid values are reported in the browser console, and the default is used inst
 | `locale`   | browser language | Language of the date, such as `'nl-NL'`. |
 | `label`    | `''`        | Caption shown above the clock, such as a city name. |
 | `font`     | system font | CSS `font-family` for the whole clock. |
-| `colors`   | `{}`        | `text` and `muted` (labels, date). See [Colors and themes](#colors-and-themes). |
+| `colors`   | `{}`        | `text`, `muted` (labels, date) and `alarm`. See [Colors and themes](#colors-and-themes). |
 | `onTick`   | `null`      | Function called once per second with `{ hours, minutes, seconds, date }` and the clock. JavaScript only. |
+| `alarm`    | `null`      | An alarm that rings at a time of day or when a countdown ends. See [Alarm](#alarm). |
 
 ### Analog
 
@@ -169,6 +171,58 @@ The sizes below are measured on a 200px dial and scale with `size`.
 | `values`      | `true`         | Show the number next to (or inside) each bar. |
 | `colors`      | theme          | `track`, `hours`, `minutes`, `seconds`, `text` (values), `labels`. |
 
+## Alarm
+
+Any clock can ring, either at a time of day or when a countdown ends. Add an `alarm` option:
+
+```js
+// Rings every day at 07:00, with a Snooze button
+new Clock('#clock', {
+  displays: ['analog', 'digital'],
+  alarm: { time: '07:00', label: 'Wake up', repeat: true, snooze: 5 }
+});
+
+// Rings when 10 minutes have passed
+new Clock('#timer', {
+  displays: ['digital'],
+  alarm: { countdown: '10m', label: 'Tea' }
+});
+```
+
+While an alarm is set, a badge under the clock shows when it goes off, for example "Wake up · 07:00 in 6:59:18". An analog dial also gets an orange alarm hand that points at the alarm time. When the alarm goes off:
+
+- the clock shakes, and the badge turns orange with a **Stop** button (plus **Snooze** when `snooze` is set);
+- it beeps, or plays your own sound, until someone presses Stop or `ringFor` seconds have passed;
+- `onAlarm` is called, and the clock's element fires a `clockalarm` event.
+
+| Option      | Default | Description |
+|-------------|---------|-------------|
+| `time`      |         | Time of day to ring: `'07:30'`, `'07:30:15'` or `'7:30 pm'`, in the clock's `timeZone`. |
+| `countdown` |         | Time until it rings, counted from the moment the alarm is set: seconds (`300`) or a duration such as `'90s'`, `'10m'`, `'1h30m'`, `'05:00'` (mm:ss) or `'1:30:00'`. Use either `time` or `countdown`. |
+| `repeat`    | `false` | With `time`: ring every day. With `countdown`: start again after each ring. Without `repeat`, the alarm switches off after it rings. |
+| `label`     | `''`    | Name shown in the badge and while ringing, such as `'Wake up'`. |
+| `sound`     | `true`  | `true` for the built-in beep, `false` for no sound, or the URL of an audio file to loop. |
+| `ringFor`   | `60`    | Seconds to keep ringing when nobody presses Stop; `0` rings until stopped. |
+| `snooze`    | `0`     | Minutes to wait after Snooze; `0` hides the Snooze button. |
+| `show`      | `true`  | Show the badge and the alarm hand. With `false` the alarm still rings, just without them. |
+| `onAlarm`   | `null`  | Function called with the clock when the alarm goes off. JavaScript only; with `data-clock` or PHP, listen for the `clockalarm` event instead. |
+
+Change the alarm while the page is open with `clock.setAlarm({ ... })` and switch it off with `clock.setAlarm(null)`. For your own buttons, use `clock.stopAlarm()` and `clock.snoozeAlarm()`. To react to an alarm from anywhere on the page:
+
+```js
+document.querySelector('#clock').addEventListener('clockalarm', event => {
+  console.log('Alarm!', event.detail.label);
+});
+```
+
+The badge texts are in English. You can style the badge like any other element, for example `#clock .clock-alarm { font-size: 20px; }`.
+
+Good to know:
+
+- **Sound needs a click first.** Browsers only play sound on a page the visitor has clicked, tapped or typed on. Before that, the alarm still shakes and shows Stop, but stays silent.
+- **Background tabs can be late.** Browsers slow down timers in tabs that aren't visible, so an alarm in a background tab can go off up to a minute late.
+- **Nothing is saved.** A countdown starts again when the page reloads.
+
 ## Colors and themes
 
 `theme` picks a full light or dark palette. `'auto'` switches between them with the visitor's system setting. Change single colors with the `colors` options:
@@ -212,6 +266,7 @@ All colors are CSS custom properties, so you can also set them from your own sty
 | `--clock-bar-seconds` | Seconds bar | `bars.colors.seconds` |
 | `--clock-bar-text` | Bar values | `bars.colors.text` |
 | `--clock-bar-label` | Bar labels | `bars.colors.labels` |
+| `--clock-alarm` | Alarm hand, bell icon, ringing badge | `colors.alarm` |
 
 ## JavaScript API
 
@@ -220,10 +275,13 @@ All colors are CSS custom properties, so you can also set them from your own sty
 | `new Clock(target, options)` | Creates a clock in `target` (a CSS selector or an element) and replaces its contents. If the element already had a clock, the old one is removed. |
 | `clock.setOptions(options)` | Merges new options into the current ones and redraws: `clock.setOptions({ theme: 'dark' })`. |
 | `clock.destroy()` | Stops the clock and removes it from the page. |
+| `clock.setAlarm(alarm)` | Sets a new alarm with the same fields as the [`alarm` option](#alarm), or switches it off with `null`. A countdown always starts over. |
+| `clock.stopAlarm()` | Stops a ringing or snoozed alarm, like the Stop button. A repeating alarm stays set for next time. |
+| `clock.snoozeAlarm()` | Snoozes a ringing alarm for `snooze` minutes (5 if not set), like the Snooze button. |
 | `clock.options` | The resolved options, with all defaults filled in. |
 | `Clock.init(scope)` | Starts all `data-clock` elements inside `scope` (default: the whole document) that don't have a clock yet. This already runs on page load; call it again after adding HTML later. |
 | `Clock.defaults` | Defaults for new clocks. For example, `Clock.defaults.theme = 'auto'` before creating any clock. |
-| `Clock.version` | `'1.0.2'` |
+| `Clock.version` | `'1.1.0'` |
 
 All clocks on a page share one timer. It updates once per second, or every animation frame while a clock has a sweeping seconds hand or smooth bars. Browsers slow it down while the tab is hidden, and the clock catches up as soon as the tab is visible again.
 
@@ -271,6 +329,13 @@ Requires PHP 8.0 or newer.
 | [`bars-rings.html`](examples/bars-rings.html) | Bars as count-down rings |
 | [`bars-vertical-up.html`](examples/bars-vertical-up.html) | Vertical bars counting up, square ends, a label |
 | [`world-clocks.html`](examples/world-clocks.html) | Several clocks in different time zones, set up with `data-clock` only |
+
+**Alarms**
+
+| Example | Shows |
+|---------|-------|
+| [`alarm-clock.html`](examples/alarm-clock.html) | A daily alarm at a time you pick, with snooze and the alarm hand |
+| [`alarm-timer.html`](examples/alarm-timer.html) | A countdown timer with preset buttons, a bigger badge and vibration on phones |
 
 ## Upgrading from the old PHP clock
 

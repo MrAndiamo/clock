@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 (2026-10-31)
+
+- New `alarm` option: ring at a time of day (`time: '07:00'`) or when a countdown ends (`countdown: '10m'`). It can repeat, beep or play your own sound, and snooze. A badge shows when it goes off, and analog dials get an alarm hand.
+- New methods `setAlarm()`, `stopAlarm()` and `snoozeAlarm()`, and a `clockalarm` event on the clock's element.
+- New examples: `alarm-clock.html` and `alarm-timer.html`, in a new Alarms category on the overview page.
+- Clocks with a sweeping seconds hand or smooth bars now keep ticking in background tabs, so alarms there still go off.
+
 ## 1.0.2 (2026-10-30)
 
 - No changes to the clock itself. `Clock.version`, the README and `VERSION` now say 1.0.2.

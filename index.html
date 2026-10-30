@@ -14,6 +14,7 @@
       --analog: #1d1d1f;
       --digital: #3867d6;
       --bars: #1f9e78;
+      --alarm: #d4780b;
       --shadow: 0 1px 2px rgb(0 0 0 / .04), 0 10px 30px -12px rgb(0 0 0 / .12);
       color-scheme: light dark;
     }
@@ -27,6 +28,7 @@
         --analog: #f2f2f4;
         --digital: #7095f0;
         --bars: #3cc79c;
+        --alarm: #f2ae48;
         --shadow: none;
       }
     }
@@ -94,6 +96,7 @@
     .tag--analog { --dot: var(--analog); }
     .tag--digital { --dot: var(--digital); }
     .tag--bars { --dot: var(--bars); }
+    .tag--alarm { --dot: var(--alarm); }
     .meta code { margin-left: auto; color: var(--muted); font-size: 12px; }
 
     footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
@@ -106,7 +109,7 @@
         <div id="logo"></div>
         <h1>Clock</h1>
       </div>
-      <p class="lead">Analog, digital and count-down bar clocks. Use one, two or all three, configured with a single options object in <code>clock.js</code>. Open any example to see its full setup.</p>
+      <p class="lead">Analog, digital and count-down bar clocks, with an optional alarm. Use one, two or all three, configured with a single options object in <code>clock.js</code>. Open any example to see its full setup.</p>
       <nav id="nav"></nav>
     </header>
 
@@ -153,9 +156,18 @@
           { file: 'bars-vertical-up.html', title: 'Vertical, counting up', text: 'Vertical bars that fill up as the day goes by, with a label.', displays: ['bars'] },
           { file: 'world-clocks.html', title: 'World clocks', text: 'Three time zones, set up with data-clock attributes only.', displays: ['analog', 'digital'] }
         ]
+      },
+      {
+        id: 'alarms',
+        title: 'Alarms',
+        intro: 'Any clock can ring at a set time or when a countdown ends, with sound, snooze and a Stop button.',
+        examples: [
+          { file: 'alarm-clock.html', title: 'Alarm clock', text: 'Rings every day at the time you set, with snooze. The orange hand shows the alarm time.', displays: ['analog', 'digital', 'alarm'] },
+          { file: 'alarm-timer.html', title: 'Countdown timer', text: 'Rings when the countdown ends. The preset buttons start a new countdown.', displays: ['digital', 'alarm'] }
+        ]
       }
     ];
-    const NAMES = { analog: 'Analog', digital: 'Digital', bars: 'Bars' };
+    const NAMES = { analog: 'Analog', digital: 'Digital', bars: 'Bars', alarm: 'Alarm' };
 
     const nav = document.getElementById('nav');
     const main = document.getElementById('sections');

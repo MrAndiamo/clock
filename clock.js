@@ -1,6 +1,6 @@
 /*!
- * clock.js 1.0.2
- * Analog, digital and count-down bar clocks in any combination.
+ * clock.js 1.1.0
+ * Analog, digital and count-down bar clocks in any combination, with an optional alarm.
  * Tim van den Dries. See README.md for every option.
  */
 (function (global, factory) {
@@ -12,7 +12,7 @@
 }(typeof self !== 'undefined' ? self : this, function () {
     'use strict';
 
-    const VERSION = '1.0.2';
+    const VERSION = '1.1.0';
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const DISPLAYS = ['analog', 'digital', 'bars'];
     const UNITS = ['hours', 'minutes', 'seconds'];
@@ -30,6 +30,7 @@
         font: null,
         colors: {},
         onTick: null,
+        alarm: null,
         analog: {
             size: 240,
             numbers: 'arabic',
@@ -70,7 +71,7 @@
 
     // Maps the `colors` keys of each section to the CSS variable they set.
     const COLOR_VARS = {
-        clock: { text: 'text', muted: 'muted' },
+        clock: { text: 'text', muted: 'muted', alarm: 'alarm' },
         analog: {
             face: 'face', border: 'border', ticks: 'ticks', numbers: 'numbers',
             hours: 'hand-hours', minutes: 'hand-minutes', seconds: 'hand-seconds', center: 'center'
@@ -83,9 +84,9 @@
     };
 
     const STYLES = `
-.clock{--clock-text:#1d1d1f;--clock-muted:#6e6e73;--clock-face:#fff;--clock-border:#1d1d1f;--clock-ticks:#1d1d1f;--clock-numbers:#1d1d1f;--clock-hand-hours:#1d1d1f;--clock-hand-minutes:#1d1d1f;--clock-hand-seconds:#d93025;--clock-center:#1d1d1f;--clock-digital:var(--clock-text);--clock-digital-date:var(--clock-muted);--clock-panel:#e9e9ee;--clock-track:#e1e1e7;--clock-bar-hours:#3867d6;--clock-bar-minutes:#1f9e78;--clock-bar-seconds:#d93025;--clock-bar-text:var(--clock-text);--clock-bar-label:var(--clock-muted);display:inline-flex;flex-direction:column;align-items:center;gap:14px;max-width:100%;box-sizing:border-box;color:var(--clock-text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.2}
-.clock--dark{--clock-text:#f2f2f4;--clock-muted:#9b9ba3;--clock-face:#1c1c20;--clock-border:#4a4a52;--clock-ticks:#c9c9cf;--clock-numbers:#f2f2f4;--clock-hand-hours:#f2f2f4;--clock-hand-minutes:#f2f2f4;--clock-hand-seconds:#ff5f52;--clock-center:#f2f2f4;--clock-panel:#1f1f24;--clock-track:#2c2c32;--clock-bar-hours:#7095f0;--clock-bar-minutes:#3cc79c;--clock-bar-seconds:#ff5f52}
-@media (prefers-color-scheme:dark){.clock--auto{--clock-text:#f2f2f4;--clock-muted:#9b9ba3;--clock-face:#1c1c20;--clock-border:#4a4a52;--clock-ticks:#c9c9cf;--clock-numbers:#f2f2f4;--clock-hand-hours:#f2f2f4;--clock-hand-minutes:#f2f2f4;--clock-hand-seconds:#ff5f52;--clock-center:#f2f2f4;--clock-panel:#1f1f24;--clock-track:#2c2c32;--clock-bar-hours:#7095f0;--clock-bar-minutes:#3cc79c;--clock-bar-seconds:#ff5f52}}
+.clock{--clock-text:#1d1d1f;--clock-muted:#6e6e73;--clock-face:#fff;--clock-border:#1d1d1f;--clock-ticks:#1d1d1f;--clock-numbers:#1d1d1f;--clock-hand-hours:#1d1d1f;--clock-hand-minutes:#1d1d1f;--clock-hand-seconds:#d93025;--clock-center:#1d1d1f;--clock-digital:var(--clock-text);--clock-digital-date:var(--clock-muted);--clock-panel:#e9e9ee;--clock-track:#e1e1e7;--clock-bar-hours:#3867d6;--clock-bar-minutes:#1f9e78;--clock-bar-seconds:#d93025;--clock-bar-text:var(--clock-text);--clock-bar-label:var(--clock-muted);--clock-alarm:#d4780b;display:inline-flex;flex-direction:column;align-items:center;gap:14px;max-width:100%;box-sizing:border-box;color:var(--clock-text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.2}
+.clock--dark{--clock-text:#f2f2f4;--clock-muted:#9b9ba3;--clock-face:#1c1c20;--clock-border:#4a4a52;--clock-ticks:#c9c9cf;--clock-numbers:#f2f2f4;--clock-hand-hours:#f2f2f4;--clock-hand-minutes:#f2f2f4;--clock-hand-seconds:#ff5f52;--clock-center:#f2f2f4;--clock-panel:#1f1f24;--clock-track:#2c2c32;--clock-bar-hours:#7095f0;--clock-bar-minutes:#3cc79c;--clock-bar-seconds:#ff5f52;--clock-alarm:#f2ae48}
+@media (prefers-color-scheme:dark){.clock--auto{--clock-text:#f2f2f4;--clock-muted:#9b9ba3;--clock-face:#1c1c20;--clock-border:#4a4a52;--clock-ticks:#c9c9cf;--clock-numbers:#f2f2f4;--clock-hand-hours:#f2f2f4;--clock-hand-minutes:#f2f2f4;--clock-hand-seconds:#ff5f52;--clock-center:#f2f2f4;--clock-panel:#1f1f24;--clock-track:#2c2c32;--clock-bar-hours:#7095f0;--clock-bar-minutes:#3cc79c;--clock-bar-seconds:#ff5f52;--clock-alarm:#f2ae48}}
 .clock *,.clock *::before,.clock *::after{box-sizing:border-box}
 .clock__label{font-size:15px;font-weight:600;letter-spacing:.01em}
 .clock__group{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--clock-gap);max-width:100%}
@@ -134,6 +135,24 @@
 .clock-ring__fill{fill:none;stroke:var(--clock-bar-color)}
 .clock-bars--rounded .clock-ring__fill{stroke-linecap:round}
 .clock-ring__dial .clock-bar__value{position:relative}
+.clock-analog__hand--alarm line{stroke:var(--clock-alarm);stroke-linecap:round}
+.clock-analog__hand--alarm path{fill:var(--clock-alarm)}
+.clock-alarm{display:inline-flex;align-items:center;gap:.55em;max-width:100%;padding:.4em .5em .4em .8em;border-radius:999px;background:var(--clock-panel);font-size:14px;line-height:1.2;font-variant-numeric:tabular-nums}
+.clock-alarm[hidden]{display:none}
+.clock-alarm__icon{flex:none;width:1.15em;height:1.15em;fill:none;stroke:var(--clock-alarm);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.clock-alarm__text{font-weight:600}
+.clock-alarm__left{padding-right:.3em;color:var(--clock-muted)}
+.clock-alarm button{display:none;padding:.35em .9em;border:0;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}
+.clock-alarm button:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.clock-alarm__snooze{background:rgb(0 0 0 / .12);color:inherit}
+.clock-alarm__stop{background:#1d1d1f;color:#fff}
+.clock--ringing .clock-alarm{background:var(--clock-alarm);color:#1d1d1f}
+.clock--ringing .clock-alarm__icon{stroke:currentColor}
+.clock--ringing .clock-alarm__left{display:none}
+.clock--ringing .clock-alarm button{display:inline-block}
+.clock--ringing>.clock__group{animation:clock-ring 1s ease-in-out infinite}
+@keyframes clock-ring{0%,50%,100%{transform:rotate(0)}10%{transform:rotate(-2deg)}20%{transform:rotate(2deg)}30%{transform:rotate(-1.5deg)}40%{transform:rotate(1.5deg)}}
+@media (prefers-reduced-motion:reduce){.clock--ringing>.clock__group{animation:none}}
 `;
 
     const registry = new WeakMap();
@@ -142,6 +161,7 @@
     let uid = 0;
     let timer = null;
     let frameId = null;
+    let audioContext = null;
 
     /* ---------- helpers ---------- */
 
@@ -251,6 +271,70 @@
         return t;
     }
 
+    // '07:30', '7:30:15' or '7:30 pm' -> seconds since midnight.
+    function parseTimeOfDay(value) {
+        const m = typeof value === 'string' && value.trim().toLowerCase().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?$/);
+        if (!m) return null;
+        let h = Number(m[1]);
+        const min = Number(m[2]);
+        const sec = Number(m[3] || 0);
+        if (m[4]) {
+            if (h < 1 || h > 12) return null;
+            h = h % 12 + (m[4] === 'pm' ? 12 : 0);
+        }
+        return h > 23 || min > 59 || sec > 59 ? null : h * 3600 + min * 60 + sec;
+    }
+
+    // 300, '90s', '10m', '1h30m', '05:00' (mm:ss) or '1:30:00' (h:mm:ss) -> seconds.
+    function parseDuration(value) {
+        if (typeof value === 'number') return value > 0 && isFinite(value) ? value : null;
+        if (typeof value !== 'string') return null;
+        const s = value.trim().toLowerCase();
+        let m = s.match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$/);
+        if (m) return Number(m[1] || 0) * 3600 + Number(m[2]) * 60 + Number(m[3]) || null;
+        m = s.match(/^(?:(\d+(?:\.\d+)?)\s*h)?\s*(?:(\d+(?:\.\d+)?)\s*m)?\s*(?:(\d+(?:\.\d+)?)\s*s)?$/);
+        if (m && (m[1] || m[2] || m[3])) return Number(m[1] || 0) * 3600 + Number(m[2] || 0) * 60 + Number(m[3] || 0) || null;
+        return /^\d+(\.\d+)?$/.test(s) && Number(s) > 0 ? Number(s) : null;
+    }
+
+    function formatDuration(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor(seconds % 3600 / 60);
+        const s = seconds % 60;
+        return h ? h + ':' + pad(m) + ':' + pad(s) : m + ':' + pad(s);
+    }
+
+    function formatTimeOfDay(seconds, hour12) {
+        const h = Math.floor(seconds / 3600);
+        const rest = pad(Math.floor(seconds % 3600 / 60)) + (seconds % 60 ? ':' + pad(seconds % 60) : '');
+        return hour12 ? (h % 12 || 12) + ':' + rest + (h < 12 ? ' AM' : ' PM') : pad(h) + ':' + rest;
+    }
+
+    // Three short beeps. Browsers only allow sound once the visitor has interacted with the page.
+    function beep() {
+        const AudioContext = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
+        if (!AudioContext || (navigator.userActivation && !navigator.userActivation.hasBeenActive)) return;
+        try {
+            audioContext = audioContext || new AudioContext();
+            if (audioContext.state === 'suspended') audioContext.resume();
+            const start = audioContext.currentTime + 0.02;
+            for (let i = 0; i < 3; i++) {
+                const at = start + i * 0.18;
+                const tone = audioContext.createOscillator();
+                const volume = audioContext.createGain();
+                tone.frequency.value = 880;
+                volume.gain.setValueAtTime(0.0001, at);
+                volume.gain.exponentialRampToValueAtTime(0.25, at + 0.01);
+                volume.gain.exponentialRampToValueAtTime(0.0001, at + 0.12);
+                tone.connect(volume).connect(audioContext.destination);
+                tone.start(at);
+                tone.stop(at + 0.13);
+            }
+        } catch (e) {
+            // No sound available; the alarm still shows.
+        }
+    }
+
     /* ---------- options ---------- */
 
     function parseDisplays(value) {
@@ -297,6 +381,33 @@
         }
     }
 
+    function normalizeAlarm(a) {
+        if (!isObject(a)) {
+            if (a) console.warn('Clock: alarm must be an object such as { time: "07:30" } or { countdown: "5m" }');
+            return null;
+        }
+        let time = a.time === undefined || a.time === null ? null : parseTimeOfDay(a.time);
+        const countdown = a.countdown === undefined || a.countdown === null ? null : parseDuration(a.countdown);
+        if (a.time !== undefined && a.time !== null && time === null) console.warn('Clock: invalid alarm.time "' + a.time + '", use "HH:MM" or "HH:MM:SS"');
+        if (a.countdown !== undefined && a.countdown !== null && countdown === null) console.warn('Clock: invalid alarm.countdown "' + a.countdown + '", use seconds or a duration such as "5m"');
+        if (time !== null && countdown !== null) {
+            console.warn('Clock: alarm has both time and countdown, using countdown');
+            time = null;
+        }
+        if (time === null && countdown === null) return null;
+        return {
+            time: time,
+            countdown: countdown,
+            repeat: !!a.repeat,
+            label: a.label ? String(a.label) : '',
+            sound: a.sound === false ? false : typeof a.sound === 'string' && a.sound ? a.sound : true,
+            ringFor: Math.max(0, num(a.ringFor, 60)),
+            snooze: Math.max(0, num(a.snooze, 0)),
+            show: a.show !== false,
+            onAlarm: typeof a.onAlarm === 'function' ? a.onAlarm : null
+        };
+    }
+
     function normalize(o) {
         DISPLAYS.forEach(function (name) {
             if (!isObject(o[name])) o[name] = merge(Clock.defaults[name], {});
@@ -310,6 +421,7 @@
         o.theme = oneOf('theme', o.theme, ['light', 'dark', 'auto'], 'light');
         o.timeZone = checkTimeZone(o.timeZone);
         o.locale = checkLocale(o.locale);
+        o.alarm = normalizeAlarm(o.alarm);
 
         const a = o.analog;
         a.size = num(a.size, 240);
@@ -363,7 +475,7 @@
 
     /* ---------- displays ---------- */
 
-    function analog(opt) {
+    function analog(opt, o) {
         const id = 'clock-' + (++uid);
         const border = opt.border;
         const inner = 99 - border;
@@ -414,6 +526,15 @@
             }
         }
 
+        // A thin alarm hand under the others points at the time the alarm rings.
+        let alarmHand = null;
+        if (o.alarm && o.alarm.show) {
+            const length = inner * 0.62;
+            alarmHand = svg('g', { class: 'clock-analog__hand clock-analog__hand--alarm', visibility: 'hidden' }, node);
+            svg('line', { x1: 0, y1: 0, x2: 0, y2: fx(-length + 6), 'stroke-width': Math.max(1.5, opt.handWidth * 0.4) }, alarmHand);
+            svg('path', { d: 'M-4.5 ' + fx(-length + 8) + 'L0 ' + fx(-length) + 'L4.5 ' + fx(-length + 8) + 'Z' }, alarmHand);
+        }
+
         // [name, length, width, tail]
         const hands = {};
         [
@@ -444,6 +565,10 @@
                 rotate(hands.hours, (t.h % 12 + minutes / 60) * 30);
                 rotate(hands.minutes, minutes * 6);
                 rotate(hands.seconds, seconds * 6);
+                if (alarmHand && t.changed) {
+                    alarmHand.setAttribute('visibility', t.alarm ? 'visible' : 'hidden');
+                    if (t.alarm) rotate(alarmHand, (t.alarm.h % 12 + t.alarm.m / 60) * 30);
+                }
             }
         };
     }
@@ -571,7 +696,8 @@
     /* ---------- timing ---------- */
 
     // One shared loop: animation frames while any clock moves smoothly,
-    // otherwise a timer aligned to the start of each second.
+    // otherwise a timer aligned to the start of each second. Hidden tabs get no
+    // animation frames, so they use the timer too and alarms still go off.
     function schedule() {
         clearTimeout(timer);
         if (frameId !== null) cancelAnimationFrame(frameId);
@@ -580,7 +706,7 @@
 
         let smooth = false;
         active.forEach(function (clock) { if (clock.smooth) smooth = true; });
-        if (smooth) {
+        if (smooth && !document.hidden) {
             frameId = requestAnimationFrame(frame);
         } else {
             timer = setTimeout(frame, 1000 - Date.now() % 1000 + 5);
@@ -617,6 +743,8 @@
             this.el = el;
             this.root = null;
             this.parts = [];
+            this._alarm = null;
+            this._audio = null;
             this._options = isObject(options) ? options : {};
             registry.set(el, this);
             this._render();
@@ -625,15 +753,50 @@
         }
 
         setOptions(options) {
-            this._options = merge(this._options, options);
+            const next = merge(this._options, options);
+            // An alarm is replaced as a whole, never merged with the previous one.
+            if (isObject(options) && 'alarm' in options) next.alarm = options.alarm;
+            this._options = next;
             this._render();
             schedule();
+            return this;
+        }
+
+        // Sets a new alarm (or clears it with null). A countdown always starts over.
+        setAlarm(alarm) {
+            this._stopSound();
+            this._alarm = null;
+            return this.setOptions({ alarm: alarm || null });
+        }
+
+        // Stops a ringing or snoozed alarm. A repeating alarm stays set for the next time.
+        stopAlarm() {
+            const state = this._alarm;
+            if (!state || (!state.ringing && !state.snoozedUntil)) return this;
+            const a = this.options.alarm;
+            this._stopSound();
+            state.ringing = false;
+            state.snoozedUntil = 0;
+            if (!a.repeat) state.done = true;
+            else if (a.countdown !== null) state.target = Date.now() + a.countdown * 1000;
+            this._showAlarm(Date.now());
+            return this;
+        }
+
+        snoozeAlarm() {
+            const state = this._alarm;
+            if (!state || !state.ringing) return this;
+            this._stopSound();
+            state.ringing = false;
+            state.snoozedUntil = Date.now() + (this.options.alarm.snooze || 5) * 60000;
+            this._showAlarm(Date.now());
             return this;
         }
 
         destroy() {
             active.delete(this);
             if (registry.get(this.el) === this) registry.delete(this.el);
+            this._stopSound();
             if (this.root) this.root.remove();
             this.root = null;
             this.parts = [];
@@ -643,23 +806,163 @@
         _render() {
             injectStyles();
             const o = this.options = normalize(merge(Clock.defaults, this._options));
+            const now = Date.now();
+            this._syncAlarm(now);
 
             this.el.textContent = '';
             const root = this.root = html('div', 'clock clock--' + o.theme);
-            root.setAttribute('role', 'img');
             root.style.setProperty('--clock-gap', px(o.gap));
             if (o.font) root.style.fontFamily = o.font;
             applyColors(root, o);
             if (o.label) html('div', 'clock__label', root, o.label);
 
             this.parts = [];
-            this._group(o.displays, o.layout, root);
+            this._display = this._group(o.displays, o.layout, root);
+            this._display.setAttribute('role', 'img');
+            this._badge = o.alarm && o.alarm.show ? this._alarmBadge(root) : null;
             this.smooth = this.parts.some(function (part) { return part.smooth; });
             this.el.appendChild(root);
 
             this._second = null;
             this._minute = null;
-            this._tick(Date.now(), true);
+            this._tick(now, true);
+        }
+
+        _alarmBadge(root) {
+            const self = this;
+            const node = html('div', 'clock-alarm', root);
+            const icon = svg('svg', { class: 'clock-alarm__icon', viewBox: '0 0 24 24', 'aria-hidden': 'true' }, node);
+            svg('path', { d: 'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4' }, icon);
+            const badge = { node: node, text: html('span', 'clock-alarm__text', node), left: html('span', 'clock-alarm__left', node), ringing: false };
+            [['snooze', 'Snooze'], ['stop', 'Stop']].forEach(function (button) {
+                if (button[0] === 'snooze' && !self.options.alarm.snooze) return;
+                const el = html('button', 'clock-alarm__' + button[0], node, button[1]);
+                el.type = 'button';
+                el.addEventListener('click', function () {
+                    if (button[0] === 'snooze') self.snoozeAlarm(); else self.stopAlarm();
+                });
+            });
+            return badge;
+        }
+
+        // Keeps a running countdown (or a ringing alarm) when the clock is redrawn with the same alarm.
+        _syncAlarm(now) {
+            const a = this.options.alarm;
+            const key = a ? JSON.stringify(a) : '';
+            if (this._alarm && this._alarm.key === key) return;
+            this._stopSound();
+            this._alarm = a ? {
+                key: key,
+                target: a.countdown !== null ? now + a.countdown * 1000 : null,
+                last: null,
+                ringing: false,
+                ringUntil: 0,
+                snoozedUntil: 0,
+                done: false,
+                left: 0,
+                at: null
+            } : null;
+        }
+
+        // Runs once per second: starts the alarm when it is due, beeps while it rings.
+        _checkAlarm(now) {
+            const state = this._alarm;
+            if (!state || state.done) return;
+            const a = this.options.alarm;
+
+            // A time alarm goes off when the clock passes its time, even if a tick was late.
+            let passed = false;
+            if (a.time !== null) {
+                const sec = this._time.h * 3600 + this._time.m * 60 + this._time.s;
+                const last = state.last;
+                passed = last !== null && last !== sec &&
+                         (last < sec ? a.time > last && a.time <= sec : a.time > last || a.time <= sec);
+                state.last = sec;
+            }
+
+            // Ticks come once per second, so a moment counts as reached within half a second of it.
+            const reached = function (moment) { return now >= moment - 500; };
+            if (state.ringing) {
+                if (a.ringFor && reached(state.ringUntil)) this.stopAlarm();
+                else if (a.sound === true) beep();
+            } else if (state.snoozedUntil ? reached(state.snoozedUntil) : state.target !== null ? reached(state.target) : passed) {
+                this._ring(now);
+            }
+        }
+
+        _ring(now) {
+            const state = this._alarm;
+            const a = this.options.alarm;
+            state.ringing = true;
+            state.snoozedUntil = 0;
+            state.ringUntil = now + a.ringFor * 1000;
+            if (typeof a.sound === 'string' && typeof Audio !== 'undefined') {
+                this._audio = new Audio(a.sound);
+                this._audio.loop = true;
+                const playing = this._audio.play();
+                if (playing && playing.catch) playing.catch(function () { /* blocked until the visitor interacts */ });
+            } else if (a.sound) {
+                beep();
+            }
+            if (a.onAlarm) {
+                try {
+                    a.onAlarm(this);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            this.el.dispatchEvent(new CustomEvent('clockalarm', { bubbles: true, detail: { clock: this, label: a.label } }));
+        }
+
+        _stopSound() {
+            if (this._audio) {
+                this._audio.pause();
+                this._audio = null;
+            }
+        }
+
+        // Updates the ringing state, the badge and when the alarm goes off next.
+        _showAlarm(now) {
+            const state = this._alarm;
+            const a = this.options.alarm;
+            const ringing = !!(state && state.ringing);
+            if (this.root) this.root.classList.toggle('clock--ringing', ringing);
+            if (!state || state.done) {
+                if (state) state.at = null;
+            } else if (!ringing) {
+                const until = state.snoozedUntil || state.target;
+                if (until) {
+                    state.left = Math.max(0, Math.round((until - now) / 1000));
+                    state.at = wallTime(until, this.options.timeZone);
+                } else {
+                    const sec = this._time.h * 3600 + this._time.m * 60 + this._time.s;
+                    state.left = (a.time - sec + 86400) % 86400 || 86400;
+                    state.at = { h: Math.floor(a.time / 3600), m: Math.floor(a.time % 3600 / 60) };
+                }
+            }
+
+            const badge = this._badge;
+            if (!badge) return;
+            badge.node.hidden = !state || state.done;
+            if (badge.node.hidden) return;
+            let text;
+            let left = '';
+            if (ringing) {
+                text = a.label || (a.countdown !== null ? 'Time’s up' : 'Alarm');
+            } else if (state.snoozedUntil) {
+                text = 'Snoozed';
+                left = 'in ' + formatDuration(state.left);
+            } else {
+                text = a.countdown !== null ? a.label || 'Timer'
+                    : (a.label ? a.label + ' · ' : '') + formatTimeOfDay(a.time, this.options.digital.hour12);
+                left = 'in ' + formatDuration(state.left);
+            }
+            setText(badge.text, text);
+            setText(badge.left, left);
+            if (badge.ringing !== ringing) {
+                badge.ringing = ringing;
+                if (ringing) badge.node.setAttribute('role', 'alert'); else badge.node.removeAttribute('role');
+            }
         }
 
         // Nested arrays become groups laid out in the opposite direction of their parent.
@@ -674,6 +977,7 @@
                     this.parts.push(part);
                 }
             }, this);
+            return group;
         }
 
         _tick(now, force) {
@@ -684,15 +988,20 @@
             if (changed) {
                 this._second = second;
                 this._time = wallTime(now, this.options.timeZone);
+                this._checkAlarm(now);
+                this._showAlarm(now);
             }
 
-            const t = { h: this._time.h, m: this._time.m, s: this._time.s, ms: now - second * 1000, now: now, changed: changed };
+            const t = {
+                h: this._time.h, m: this._time.m, s: this._time.s, ms: now - second * 1000, now: now, changed: changed,
+                alarm: this._alarm ? this._alarm.at : null
+            };
             this.parts.forEach(function (part) { part.update(t); });
 
             if (!changed) return;
             if (t.m !== this._minute) {
                 this._minute = t.m;
-                this.root.setAttribute('aria-label', (this.options.label ? this.options.label + ', ' : '') + pad(t.h) + ':' + pad(t.m));
+                this._display.setAttribute('aria-label', (this.options.label ? this.options.label + ', ' : '') + pad(t.h) + ':' + pad(t.m));
             }
             if (typeof this.options.onTick === 'function') {
                 try {
