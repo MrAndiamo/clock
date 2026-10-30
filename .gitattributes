@@ -1,0 +1,5 @@
+# Left out of the package that Composer downloads
+/.idea           export-ignore
+/.gitattributes  export-ignore
+/.gitignore      export-ignore
+/composer.lock   export-ignore
