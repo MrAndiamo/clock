@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 (2026-10-30)
+
+- No changes to the clock itself. `Clock.version`, the README and `VERSION` now say 1.0.2.
+
 ## 1.0.1 (2026-10-30)
 
 - Added the MIT license to `composer.json`, so Packagist shows it.

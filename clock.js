@@ -1,5 +1,5 @@
 /*!
- * clock.js 1.0.1
+ * clock.js 1.0.2
  * Analog, digital and count-down bar clocks in any combination.
  * Tim van den Dries. See README.md for every option.
  */
@@ -12,7 +12,7 @@
 }(typeof self !== 'undefined' ? self : this, function () {
     'use strict';
 
-    const VERSION = '1.0.1';
+    const VERSION = '1.0.2';
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const DISPLAYS = ['analog', 'digital', 'bars'];
     const UNITS = ['hours', 'minutes', 'seconds'];

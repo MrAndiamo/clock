@@ -223,7 +223,7 @@ All colors are CSS custom properties, so you can also set them from your own sty
 | `clock.options` | The resolved options, with all defaults filled in. |
 | `Clock.init(scope)` | Starts all `data-clock` elements inside `scope` (default: the whole document) that don't have a clock yet. This already runs on page load; call it again after adding HTML later. |
 | `Clock.defaults` | Defaults for new clocks. For example, `Clock.defaults.theme = 'auto'` before creating any clock. |
-| `Clock.version` | `'1.0.1'` |
+| `Clock.version` | `'1.0.2'` |
 
 All clocks on a page share one timer. It updates once per second, or every animation frame while a clock has a sweeping seconds hand or smooth bars. Browsers slow it down while the tab is hidden, and the clock catches up as soon as the tab is visible again.
 
