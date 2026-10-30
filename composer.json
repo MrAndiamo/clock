@@ -1,6 +1,6 @@
 {
     "name": "timvandendries/clock",
-    "description": "timer that triggers event",
+    "description": "Configurable analog, digital and count-down bar clocks",
     "type": "library",
     "autoload": {
         "psr-4": {
