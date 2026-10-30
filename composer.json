@@ -2,6 +2,7 @@
     "name": "timvandendries/clock",
     "description": "Configurable analog, digital and count-down bar clocks",
     "type": "library",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Timvandendries\\Clock\\": "src/"
