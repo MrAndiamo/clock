@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roman numerals, dark & gold</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: #0d0d0f; }
+  </style>
+</head>
+<body>
+  <div id="clock"></div>
+
+  <script src="../clock.js"></script>
+  <script>
+    new Clock('#clock', {
+      displays: ['analog'],
+      theme: 'dark',
+      analog: {
+        size: 320,
+        numbers: 'roman',
+        smooth: true,
+        border: 9,
+        handWidth: 4,
+        colors: {
+          border: ['#6b4f17', '#f4d77e', '#6b4f17'],
+          face: '#141416',
+          ticks: '#8c7a52',
+          numbers: '#eadbb0',
+          hours: '#eadbb0',
+          minutes: '#eadbb0',
+          seconds: '#e2b04a',
+          center: '#e2b04a'
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clock examples</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --border: #e3e3e8;
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+      --analog: #1d1d1f;
+      --digital: #3867d6;
+      --bars: #1f9e78;
+      --shadow: 0 1px 2px rgb(0 0 0 / .04), 0 10px 30px -12px rgb(0 0 0 / .12);
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111114;
+        --surface: #18181c;
+        --border: #2a2a30;
+        --text: #f2f2f4;
+        --muted: #9b9ba3;
+        --analog: #f2f2f4;
+        --digital: #7095f0;
+        --bars: #3cc79c;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+    code { font: 13px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace; }
+
+    .page { max-width: 1240px; margin: 0 auto; padding: 64px 24px 96px; }
+
+    header { margin-bottom: 56px; }
+    .brand { display: flex; align-items: center; gap: 16px; }
+    .brand h1 { margin: 0; font-size: clamp(34px, 5vw, 48px); line-height: 1; letter-spacing: -.03em; }
+    .lead { max-width: 640px; margin: 18px 0 0; font-size: 18px; color: var(--muted); }
+    .lead code { font-size: 15px; color: var(--text); }
+
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+    nav a {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 14px; border: 1px solid var(--border); border-radius: 999px;
+      background: var(--surface); text-decoration: none; font-size: 14px; font-weight: 500;
+    }
+    nav a:hover { border-color: var(--muted); }
+    nav a span { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    section { margin-top: 64px; scroll-margin-top: 24px; }
+    section > h2 { margin: 0; font-size: 24px; letter-spacing: -.02em; }
+    section > p { margin: 6px 0 24px; color: var(--muted); max-width: 640px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 20px; }
+
+    .card {
+      display: flex; flex-direction: column; overflow: hidden;
+      border: 1px solid var(--border); border-radius: 16px;
+      background: var(--surface); box-shadow: var(--shadow);
+      text-decoration: none; transition: transform .2s, border-color .2s;
+    }
+    .card:hover { transform: translateY(-2px); border-color: var(--muted); }
+    .card:focus-visible { outline: 2px solid var(--digital); outline-offset: 3px; }
+
+    /* Each preview is the real example page, rendered at 800 x 500 and scaled to fit the card. */
+    .preview { position: relative; aspect-ratio: 8 / 5; overflow: hidden; border-bottom: 1px solid var(--border); background: var(--bg); }
+    .preview iframe {
+      position: absolute; top: 0; left: 0; width: 800px; height: 500px; border: 0;
+      transform: scale(var(--scale, .42)); transform-origin: 0 0; pointer-events: none;
+    }
+
+    .card-body { padding: 16px 18px 18px; }
+    .card h3 { margin: 0; font-size: 17px; letter-spacing: -.01em; }
+    .card p { margin: 4px 0 14px; font-size: 14px; color: var(--muted); }
+    .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 9px; border-radius: 999px; background: var(--bg);
+      font-size: 12px; font-weight: 600;
+    }
+    .tag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--dot); }
+    .tag--analog { --dot: var(--analog); }
+    .tag--digital { --dot: var(--digital); }
+    .tag--bars { --dot: var(--bars); }
+    .meta code { margin-left: auto; color: var(--muted); font-size: 12px; }
+
+    footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <div id="logo"></div>
+        <h1>Clock</h1>
+      </div>
+      <p class="lead">Analog, digital and count-down bar clocks. Use one, two or all three, configured with a single options object in <code>clock.js</code>. Open any example to see its full setup.</p>
+      <nav id="nav"></nav>
+    </header>
+
+    <main id="sections"></main>
+
+    <footer>
+      Every option is described in <a href="README.md">README.md</a>. The examples live in <code>examples/</code>; each page is self-contained apart from <code>clock.js</code>.
+    </footer>
+  </div>
+
+  <script src="clock.js"></script>
+  <script>
+    const CATEGORIES = [
+      {
+        id: 'single',
+        title: 'Single displays',
+        intro: 'Each display on its own, close to the default settings.',
+        examples: [
+          { file: 'analog.html', title: 'Analog', text: 'Classic dial with numbers, minute ticks and a red seconds hand.', displays: ['analog'] },
+          { file: 'digital.html', title: 'Digital', text: '24-hour time with seconds, and the date underneath.', displays: ['digital'] },
+          { file: 'bars.html', title: 'Count-down bars', text: 'Bars that empty as the day, the hour and the minute run out.', displays: ['bars'] }
+        ]
+      },
+      {
+        id: 'combinations',
+        title: 'Combinations',
+        intro: 'Every combination of two or three displays. They are shown in the order of the displays option, in a row or a column.',
+        examples: [
+          { file: 'analog-digital.html', title: 'Analog + digital', text: 'The dial with the digital time and date underneath.', displays: ['analog', 'digital'] },
+          { file: 'analog-bars.html', title: 'Analog + bars', text: 'The dial next to the count-down bars.', displays: ['analog', 'bars'] },
+          { file: 'digital-bars.html', title: 'Digital + bars', text: 'The digital time stacked above the count-down bars.', displays: ['digital', 'bars'] },
+          { file: 'analog-digital-bars.html', title: 'Analog + digital + bars', text: 'The dial next to a nested group with the time and bars.', displays: ['analog', 'digital', 'bars'] }
+        ]
+      },
+      {
+        id: 'options',
+        title: 'Styles & options',
+        intro: 'A tour of the configuration: themes, colors, numerals, ring and vertical bars, time zones and the data-clock attribute.',
+        examples: [
+          { file: 'analog-roman-dark.html', title: 'Roman, dark & gold', text: 'Roman numerals, a sweeping seconds hand and a gradient border.', displays: ['analog'] },
+          { file: 'analog-minimal.html', title: 'Minimal dial', text: 'No numbers or border, hour ticks only, sweeping seconds.', displays: ['analog'] },
+          { file: 'digital-12h-date.html', title: '12-hour panel', text: 'AM/PM, blinking colons and the full date on a panel.', displays: ['digital'] },
+          { file: 'bars-rings.html', title: 'Count-down rings', text: 'The bars drawn as rings, with the remaining value inside.', displays: ['bars'] },
+          { file: 'bars-vertical-up.html', title: 'Vertical, counting up', text: 'Vertical bars that fill up as the day goes by, with a label.', displays: ['bars'] },
+          { file: 'world-clocks.html', title: 'World clocks', text: 'Three time zones, set up with data-clock attributes only.', displays: ['analog', 'digital'] }
+        ]
+      }
+    ];
+    const NAMES = { analog: 'Analog', digital: 'Digital', bars: 'Bars' };
+
+    const nav = document.getElementById('nav');
+    const main = document.getElementById('sections');
+
+    for (const category of CATEGORIES) {
+      nav.insertAdjacentHTML('beforeend',
+        `<a href="#${category.id}">${category.title} <span>${category.examples.length}</span></a>`);
+
+      const cards = category.examples.map(example => `
+        <a class="card" href="examples/${example.file}">
+          <div class="preview">
+            <iframe src="examples/${example.file}" title="${example.title} preview" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
+          </div>
+          <div class="card-body">
+            <h3>${example.title}</h3>
+            <p>${example.text}</p>
+            <div class="meta">
+              ${example.displays.map(d => `<span class="tag tag--${d}">${NAMES[d]}</span>`).join('')}
+              <code>${example.file}</code>
+            </div>
+          </div>
+        </a>`).join('');
+
+      main.insertAdjacentHTML('beforeend', `
+        <section id="${category.id}">
+          <h2>${category.title}</h2>
+          <p>${category.intro}</p>
+          <div class="grid">${cards}</div>
+        </section>`);
+    }
+
+    // Scale each 800px-wide preview down to the width of its card.
+    const resize = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        entry.target.style.setProperty('--scale', entry.contentRect.width / 800);
+      }
+    });
+    document.querySelectorAll('.preview').forEach(preview => resize.observe(preview));
+
+    new Clock('#logo', {
+      displays: ['analog'],
+      theme: 'auto',
+      analog: { size: 44, numbers: 'none', ticks: 'hours', border: 9, handWidth: 12, centerSize: 10 }
+    });
+  </script>
+</body>
+</html>

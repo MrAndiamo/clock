@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Analog clock + count-down bars</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: #f5f5f7; }
+    @media (prefers-color-scheme: dark) { body { background: #111114; } }
+  </style>
+</head>
+<body>
+  <div id="clock"></div>
+
+  <script src="../clock.js"></script>
+  <script>
+    new Clock('#clock', {
+      displays: ['analog', 'bars'],
+      layout: 'row',
+      gap: 48,
+      theme: 'auto',
+      analog: {
+        size: 260
+      },
+      bars: {
+        length: 240
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minimal analog clock</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: #f5f5f7; }
+    @media (prefers-color-scheme: dark) { body { background: #111114; } }
+  </style>
+</head>
+<body>
+  <div id="clock"></div>
+
+  <script src="../clock.js"></script>
+  <script>
+    new Clock('#clock', {
+      displays: ['analog'],
+      theme: 'auto',
+      analog: {
+        size: 300,
+        numbers: 'none',
+        ticks: 'hours',
+        border: 0,
+        handWidth: 7,
+        centerSize: 7,
+        smooth: true
+      }
+    });
+  </script>
+</body>
+</html>
