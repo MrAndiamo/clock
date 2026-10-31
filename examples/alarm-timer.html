@@ -39,10 +39,10 @@
     const timer = new Clock('#timer', {
       displays: ['digital'],
       theme: 'auto',
-      digital: { size: 72 },
-      alarm: countdown('3m')
+      digital: { size: 72 }
     });
 
+    // Each button starts a new countdown; the badge appears with the time left.
     document.querySelectorAll('[data-countdown]').forEach(button => {
       button.addEventListener('click', () => timer.setAlarm(countdown(button.dataset.countdown)));
     });

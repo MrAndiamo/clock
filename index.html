@@ -163,11 +163,14 @@
         intro: 'Any clock can ring at a set time or when a countdown ends, with sound, snooze and a Stop button.',
         examples: [
           { file: 'alarm-clock.html', title: 'Alarm clock', text: 'Rings every day at the time you set, with snooze. The orange hand shows the alarm time.', displays: ['analog', 'digital', 'alarm'] },
-          { file: 'alarm-timer.html', title: 'Countdown timer', text: 'Rings when the countdown ends. The preset buttons start a new countdown.', displays: ['digital', 'alarm'] }
+          { file: 'alarm-timer.html', title: 'Countdown timer', text: 'Pick a preset to start a countdown; it rings when the countdown ends.', displays: ['digital', 'alarm'] }
         ]
       }
     ];
     const NAMES = { analog: 'Analog', digital: 'Digital', bars: 'Bars', alarm: 'Alarm' };
+    // Sandboxed previews can't get sound unlocked by clicks on this page. Pages opened from disk are
+    // already isolated from each other, and a sandbox there would block loading clock.js.
+    const SANDBOX = location.protocol === 'file:' ? '' : ' sandbox="allow-scripts"';
 
     const nav = document.getElementById('nav');
     const main = document.getElementById('sections');
@@ -179,7 +182,7 @@
       const cards = category.examples.map(example => `
         <a class="card" href="examples/${example.file}">
           <div class="preview">
-            <iframe src="examples/${example.file}" title="${example.title} preview" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
+            <iframe src="examples/${example.file}" title="${example.title} preview" loading="lazy" tabindex="-1" aria-hidden="true"${SANDBOX}></iframe>
           </div>
           <div class="card-body">
             <h3>${example.title}</h3>

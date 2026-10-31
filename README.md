@@ -197,8 +197,8 @@ While an alarm is set, a badge under the clock shows when it goes off, for examp
 
 | Option      | Default | Description |
 |-------------|---------|-------------|
-| `time`      |         | Time of day to ring: `'07:30'`, `'07:30:15'` or `'7:30 pm'`, in the clock's `timeZone`. |
-| `countdown` |         | Time until it rings, counted from the moment the alarm is set: seconds (`300`) or a duration such as `'90s'`, `'10m'`, `'1h30m'`, `'05:00'` (mm:ss) or `'1:30:00'`. Use either `time` or `countdown`. |
+| `time`      |         | Time of day to ring: `'07:30'`, `'07:30:15'`, `'7:30 pm'` or seconds since midnight (`27000`), in the clock's `timeZone`. Daylight saving changes are taken into account. |
+| `countdown` |         | Time until it rings, counted from the moment the alarm is set: seconds (`300`) or a duration such as `'90s'`, `'10m'`, `'1h30m'`, `'05:00'` (mm:ss, any number of minutes) or `'1:30:00'` (h:mm:ss). Use either `time` or `countdown`. |
 | `repeat`    | `false` | With `time`: ring every day. With `countdown`: start again after each ring. Without `repeat`, the alarm switches off after it rings. |
 | `label`     | `''`    | Name shown in the badge and while ringing, such as `'Wake up'`. |
 | `sound`     | `true`  | `true` for the built-in beep, `false` for no sound, or the URL of an audio file to loop. |
@@ -207,7 +207,7 @@ While an alarm is set, a badge under the clock shows when it goes off, for examp
 | `show`      | `true`  | Show the badge and the alarm hand. With `false` the alarm still rings, just without them. |
 | `onAlarm`   | `null`  | Function called with the clock when the alarm goes off. JavaScript only; with `data-clock` or PHP, listen for the `clockalarm` event instead. |
 
-Change the alarm while the page is open with `clock.setAlarm({ ... })` and switch it off with `clock.setAlarm(null)`. For your own buttons, use `clock.stopAlarm()` and `clock.snoozeAlarm()`. To react to an alarm from anywhere on the page:
+Change the alarm while the page is open with `clock.setAlarm({ ... })`, which replaces the whole alarm and starts a countdown over, and switch it off with `clock.setAlarm(null)`. `clock.setOptions({ alarm: { label: 'Coffee' } })` merges like every other option: it only changes the fields you give, and a running countdown keeps going. Giving a new `time` there replaces a `countdown`, and the other way round. For your own buttons, use `clock.stopAlarm()` and `clock.snoozeAlarm()`. To react to an alarm from anywhere on the page:
 
 ```js
 document.querySelector('#clock').addEventListener('clockalarm', event => {
@@ -222,6 +222,7 @@ Good to know:
 - **Sound needs a click first.** Browsers only play sound on a page the visitor has clicked, tapped or typed on. Before that, the alarm still shakes and shows Stop, but stays silent.
 - **Background tabs can be late.** Browsers slow down timers in tabs that aren't visible, so an alarm in a background tab can go off up to a minute late.
 - **Nothing is saved.** A countdown starts again when the page reloads.
+- **A removed clock stays silent.** If its element is taken off the page without `destroy()`, the alarm keeps time but makes no sound.
 
 ## Colors and themes
 
@@ -281,7 +282,7 @@ All colors are CSS custom properties, so you can also set them from your own sty
 | `clock.options` | The resolved options, with all defaults filled in. |
 | `Clock.init(scope)` | Starts all `data-clock` elements inside `scope` (default: the whole document) that don't have a clock yet. This already runs on page load; call it again after adding HTML later. |
 | `Clock.defaults` | Defaults for new clocks. For example, `Clock.defaults.theme = 'auto'` before creating any clock. |
-| `Clock.version` | `'1.1.0'` |
+| `Clock.version` | `'1.1.1'` |
 
 All clocks on a page share one timer. It updates once per second, or every animation frame while a clock has a sweeping seconds hand or smooth bars. Browsers slow it down while the tab is hidden, and the clock catches up as soon as the tab is visible again.
 

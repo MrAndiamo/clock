@@ -1,5 +1,5 @@
 /*!
- * clock.js 1.1.0
+ * clock.js 1.1.1
  * Analog, digital and count-down bar clocks in any combination, with an optional alarm.
  * Tim van den Dries. See README.md for every option.
  */
@@ -12,7 +12,7 @@
 }(typeof self !== 'undefined' ? self : this, function () {
     'use strict';
 
-    const VERSION = '1.1.0';
+    const VERSION = '1.1.1';
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const DISPLAYS = ['analog', 'digital', 'bars'];
     const UNITS = ['hours', 'minutes', 'seconds'];
@@ -271,8 +271,25 @@
         return t;
     }
 
-    // '07:30', '7:30:15' or '7:30 pm' -> seconds since midnight.
+    function secondsOfDay(t) {
+        return t.h * 3600 + t.m * 60 + t.s;
+    }
+
+    // The next moment (in ms) after `now` at which the wall clock of `timeZone` shows `seconds` since midnight.
+    function nextTimeOfDay(now, seconds, timeZone) {
+        const base = Math.floor(now / 1000) * 1000;
+        let next = base + ((seconds - secondsOfDay(wallTime(base, timeZone)) + 86400) % 86400 || 86400) * 1000;
+        // Correct for a daylight saving change in between.
+        let shift = seconds - secondsOfDay(wallTime(next, timeZone));
+        if (shift > 43200) shift -= 86400;
+        if (shift < -43200) shift += 86400;
+        next += shift * 1000;
+        return next > now ? next : next + 86400000;
+    }
+
+    // '07:30', '7:30:15', '7:30 pm' or seconds since midnight -> seconds since midnight.
     function parseTimeOfDay(value) {
+        if (typeof value === 'number') return value >= 0 && value < 86400 && value % 1 === 0 ? value : null;
         const m = typeof value === 'string' && value.trim().toLowerCase().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?$/);
         if (!m) return null;
         let h = Number(m[1]);
@@ -290,8 +307,14 @@
         if (typeof value === 'number') return value > 0 && isFinite(value) ? value : null;
         if (typeof value !== 'string') return null;
         const s = value.trim().toLowerCase();
-        let m = s.match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$/);
-        if (m) return Number(m[1] || 0) * 3600 + Number(m[2]) * 60 + Number(m[3]) || null;
+        // mm:ss (any number of minutes) or h:mm:ss (any number of hours); seconds and h:mm minutes stay below 60.
+        let m = s.match(/^(\d+):(\d+)(?::(\d+))?$/);
+        if (m) {
+            const parts = m.slice(1).filter(function (part) { return part !== undefined; }).map(Number);
+            if (parts[parts.length - 1] > 59 || (parts.length === 3 && parts[1] > 59)) return null;
+            const total = parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : parts[0] * 60 + parts[1];
+            return total || null;
+        }
         m = s.match(/^(?:(\d+(?:\.\d+)?)\s*h)?\s*(?:(\d+(?:\.\d+)?)\s*m)?\s*(?:(\d+(?:\.\d+)?)\s*s)?$/);
         if (m && (m[1] || m[2] || m[3])) return Number(m[1] || 0) * 3600 + Number(m[2] || 0) * 60 + Number(m[3] || 0) || null;
         return /^\d+(\.\d+)?$/.test(s) && Number(s) > 0 ? Number(s) : null;
@@ -386,10 +409,13 @@
             if (a) console.warn('Clock: alarm must be an object such as { time: "07:30" } or { countdown: "5m" }');
             return null;
         }
-        let time = a.time === undefined || a.time === null ? null : parseTimeOfDay(a.time);
-        const countdown = a.countdown === undefined || a.countdown === null ? null : parseDuration(a.countdown);
-        if (a.time !== undefined && a.time !== null && time === null) console.warn('Clock: invalid alarm.time "' + a.time + '", use "HH:MM" or "HH:MM:SS"');
-        if (a.countdown !== undefined && a.countdown !== null && countdown === null) console.warn('Clock: invalid alarm.countdown "' + a.countdown + '", use seconds or a duration such as "5m"');
+        const hasTime = a.time != null;
+        const hasCountdown = a.countdown != null;
+        let time = hasTime ? parseTimeOfDay(a.time) : null;
+        const countdown = hasCountdown ? parseDuration(a.countdown) : null;
+        if (hasTime && time === null) console.warn('Clock: invalid alarm.time "' + a.time + '", use "HH:MM" or "HH:MM:SS"');
+        if (hasCountdown && countdown === null) console.warn('Clock: invalid alarm.countdown "' + a.countdown + '", use seconds or a duration such as "5m"');
+        if (!hasTime && !hasCountdown) console.warn('Clock: alarm needs a time or a countdown');
         if (time !== null && countdown !== null) {
             console.warn('Clock: alarm has both time and countdown, using countdown');
             time = null;
@@ -528,6 +554,7 @@
 
         // A thin alarm hand under the others points at the time the alarm rings.
         let alarmHand = null;
+        let shownAlarm;
         if (o.alarm && o.alarm.show) {
             const length = inner * 0.62;
             alarmHand = svg('g', { class: 'clock-analog__hand clock-analog__hand--alarm', visibility: 'hidden' }, node);
@@ -565,7 +592,8 @@
                 rotate(hands.hours, (t.h % 12 + minutes / 60) * 30);
                 rotate(hands.minutes, minutes * 6);
                 rotate(hands.seconds, seconds * 6);
-                if (alarmHand && t.changed) {
+                if (alarmHand && t.alarm !== shownAlarm) {
+                    shownAlarm = t.alarm;
                     alarmHand.setAttribute('visibility', t.alarm ? 'visible' : 'hidden');
                     if (t.alarm) rotate(alarmHand, (t.alarm.h % 12 + t.alarm.m / 60) * 30);
                 }
@@ -723,8 +751,10 @@
     }
 
     if (typeof document !== 'undefined') {
+        // Switches between animation frames and the timer in both directions,
+        // and catches up at once when the tab becomes visible again.
         document.addEventListener('visibilitychange', function () {
-            if (!document.hidden && active.size) frame();
+            if (active.size) frame();
         });
     }
 
@@ -754,42 +784,48 @@
 
         setOptions(options) {
             const next = merge(this._options, options);
-            // An alarm is replaced as a whole, never merged with the previous one.
-            if (isObject(options) && 'alarm' in options) next.alarm = options.alarm;
+            // Alarm fields are merged, but a new time replaces a countdown and the other way round.
+            if (isObject(options) && isObject(options.alarm) && isObject(next.alarm)) {
+                if (options.alarm.time != null) next.alarm.countdown = null;
+                if (options.alarm.countdown != null) next.alarm.time = null;
+            }
             this._options = next;
             this._render();
             schedule();
             return this;
         }
 
-        // Sets a new alarm (or clears it with null). A countdown always starts over.
+        // Replaces the whole alarm (or clears it with null). A countdown always starts over.
         setAlarm(alarm) {
-            this._stopSound();
             this._alarm = null;
-            return this.setOptions({ alarm: alarm || null });
+            this._options = merge(this._options, {});
+            this._options.alarm = alarm || null;
+            this._render();
+            schedule();
+            return this;
         }
 
-        // Stops a ringing or snoozed alarm. A repeating alarm stays set for the next time.
+        // Stops a ringing or snoozed alarm. A repeating alarm is set again for the next time.
         stopAlarm() {
             const state = this._alarm;
-            if (!state || (!state.ringing && !state.snoozedUntil)) return this;
-            const a = this.options.alarm;
+            if (!state || (!state.ringing && !state.snoozed)) return this;
+            const now = Date.now();
             this._stopSound();
-            state.ringing = false;
-            state.snoozedUntil = 0;
-            if (!a.repeat) state.done = true;
-            else if (a.countdown !== null) state.target = Date.now() + a.countdown * 1000;
-            this._showAlarm(Date.now());
+            state.ringing = state.snoozed = false;
+            if (this.options.alarm.repeat) this._aimAlarm(now); else state.done = true;
+            this._showAlarm(now);
             return this;
         }
 
         snoozeAlarm() {
             const state = this._alarm;
             if (!state || !state.ringing) return this;
+            const now = Date.now();
             this._stopSound();
             state.ringing = false;
-            state.snoozedUntil = Date.now() + (this.options.alarm.snooze || 5) * 60000;
-            this._showAlarm(Date.now());
+            state.snoozed = true;
+            this._aim(now + (this.options.alarm.snooze || 5) * 60000);
+            this._showAlarm(now);
             return this;
         }
 
@@ -797,6 +833,7 @@
             active.delete(this);
             if (registry.get(this.el) === this) registry.delete(this.el);
             this._stopSound();
+            this._alarm = null;
             if (this.root) this.root.remove();
             this.root = null;
             this.parts = [];
@@ -814,7 +851,8 @@
             root.style.setProperty('--clock-gap', px(o.gap));
             if (o.font) root.style.fontFamily = o.font;
             applyColors(root, o);
-            if (o.label) html('div', 'clock__label', root, o.label);
+            // The caption is already part of the clock's aria-label.
+            if (o.label) html('div', 'clock__label', root, o.label).setAttribute('aria-hidden', 'true');
 
             this.parts = [];
             this._display = this._group(o.displays, o.layout, root);
@@ -833,7 +871,7 @@
             const node = html('div', 'clock-alarm', root);
             const icon = svg('svg', { class: 'clock-alarm__icon', viewBox: '0 0 24 24', 'aria-hidden': 'true' }, node);
             svg('path', { d: 'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4' }, icon);
-            const badge = { node: node, text: html('span', 'clock-alarm__text', node), left: html('span', 'clock-alarm__left', node), ringing: false };
+            const badge = { node: node, text: html('span', 'clock-alarm__text', node), left: html('span', 'clock-alarm__left', node) };
             [['snooze', 'Snooze'], ['stop', 'Stop']].forEach(function (button) {
                 if (button[0] === 'snooze' && !self.options.alarm.snooze) return;
                 const el = html('button', 'clock-alarm__' + button[0], node, button[1]);
@@ -846,47 +884,63 @@
         }
 
         // Keeps a running countdown (or a ringing alarm) when the clock is redrawn with the same alarm.
+        // Only the fields that decide when it rings count; a new label or sound keeps it running.
         _syncAlarm(now) {
             const a = this.options.alarm;
-            const key = a ? JSON.stringify(a) : '';
-            if (this._alarm && this._alarm.key === key) return;
+            const key = a ? JSON.stringify([a.time, a.countdown, a.repeat]) : '';
+            const state = this._alarm;
+            if (state && state.key === key) {
+                // In another time zone, a time alarm goes off at another moment.
+                if (state.zone !== this.options.timeZone) {
+                    state.zone = this.options.timeZone;
+                    if (a.time !== null && !state.ringing && !state.snoozed && !state.done) this._aimAlarm(now);
+                }
+                return;
+            }
             this._stopSound();
             this._alarm = a ? {
                 key: key,
-                target: a.countdown !== null ? now + a.countdown * 1000 : null,
-                last: null,
+                zone: this.options.timeZone,
+                target: 0,      // when it rings next, in ms
+                at: null,       // the same moment as wall-clock time, for the alarm hand
                 ringing: false,
                 ringUntil: 0,
-                snoozedUntil: 0,
-                done: false,
-                left: 0,
-                at: null
+                snoozed: false,
+                announce: false,
+                done: false
             } : null;
+            if (a) this._aimAlarm(now);
         }
 
-        // Runs once per second: starts the alarm when it is due, beeps while it rings.
+        // Points the alarm at its next time of day, or at the end of a new countdown.
+        _aimAlarm(now) {
+            const a = this.options.alarm;
+            this._aim(a.time !== null ? nextTimeOfDay(now, a.time, this.options.timeZone) : now + a.countdown * 1000);
+        }
+
+        _aim(moment) {
+            this._alarm.target = moment;
+            this._alarm.at = wallTime(moment, this.options.timeZone);
+        }
+
+        // Runs once per second: starts the alarm when it is due, and keeps it sounding while it rings.
         _checkAlarm(now) {
             const state = this._alarm;
             if (!state || state.done) return;
             const a = this.options.alarm;
-
-            // A time alarm goes off when the clock passes its time, even if a tick was late.
-            let passed = false;
-            if (a.time !== null) {
-                const sec = this._time.h * 3600 + this._time.m * 60 + this._time.s;
-                const last = state.last;
-                passed = last !== null && last !== sec &&
-                         (last < sec ? a.time > last && a.time <= sec : a.time > last || a.time <= sec);
-                state.last = sec;
-            }
-
             // Ticks come once per second, so a moment counts as reached within half a second of it.
-            const reached = function (moment) { return now >= moment - 500; };
-            if (state.ringing) {
-                if (a.ringFor && reached(state.ringUntil)) this.stopAlarm();
-                else if (a.sound === true) beep();
-            } else if (state.snoozedUntil ? reached(state.snoozedUntil) : state.target !== null ? reached(state.target) : passed) {
-                this._ring(now);
+            if (!state.ringing) {
+                if (now >= state.target - 500) this._ring(now);
+            } else if (a.ringFor && now >= state.ringUntil - 500) {
+                this.stopAlarm();
+            } else if (!this.root.isConnected) {
+                // A clock that was removed from the page stays silent.
+                this._stopSound();
+            } else if (a.sound === true) {
+                beep();
+            } else if (a.sound && (!this._audio || this._audio.paused)) {
+                // Retry a sound the browser blocked, in case the visitor has interacted since.
+                this._playSound();
             }
         }
 
@@ -894,15 +948,12 @@
             const state = this._alarm;
             const a = this.options.alarm;
             state.ringing = true;
-            state.snoozedUntil = 0;
+            state.snoozed = false;
+            state.announce = true;
             state.ringUntil = now + a.ringFor * 1000;
-            if (typeof a.sound === 'string' && typeof Audio !== 'undefined') {
-                this._audio = new Audio(a.sound);
-                this._audio.loop = true;
-                const playing = this._audio.play();
-                if (playing && playing.catch) playing.catch(function () { /* blocked until the visitor interacts */ });
-            } else if (a.sound) {
-                beep();
+            if (this.root.isConnected) {
+                if (a.sound === true) beep();
+                else if (a.sound) this._playSound();
             }
             if (a.onAlarm) {
                 try {
@@ -914,6 +965,16 @@
             this.el.dispatchEvent(new CustomEvent('clockalarm', { bubbles: true, detail: { clock: this, label: a.label } }));
         }
 
+        _playSound() {
+            if (typeof Audio === 'undefined') return;
+            if (!this._audio) {
+                this._audio = new Audio(this.options.alarm.sound);
+                this._audio.loop = true;
+            }
+            const playing = this._audio.play();
+            if (playing && playing.catch) playing.catch(function () { /* blocked until the visitor interacts */ });
+        }
+
         _stopSound() {
             if (this._audio) {
                 this._audio.pause();
@@ -921,47 +982,37 @@
             }
         }
 
-        // Updates the ringing state, the badge and when the alarm goes off next.
+        // Updates the ringing state and the badge.
         _showAlarm(now) {
             const state = this._alarm;
             const a = this.options.alarm;
             const ringing = !!(state && state.ringing);
-            if (this.root) this.root.classList.toggle('clock--ringing', ringing);
-            if (!state || state.done) {
-                if (state) state.at = null;
-            } else if (!ringing) {
-                const until = state.snoozedUntil || state.target;
-                if (until) {
-                    state.left = Math.max(0, Math.round((until - now) / 1000));
-                    state.at = wallTime(until, this.options.timeZone);
-                } else {
-                    const sec = this._time.h * 3600 + this._time.m * 60 + this._time.s;
-                    state.left = (a.time - sec + 86400) % 86400 || 86400;
-                    state.at = { h: Math.floor(a.time / 3600), m: Math.floor(a.time % 3600 / 60) };
-                }
-            }
+            this.root.classList.toggle('clock--ringing', ringing);
 
             const badge = this._badge;
-            if (!badge) return;
+            if (!badge) {
+                if (state) state.announce = false;
+                return;
+            }
             badge.node.hidden = !state || state.done;
             if (badge.node.hidden) return;
             let text;
-            let left = '';
             if (ringing) {
                 text = a.label || (a.countdown !== null ? 'Time’s up' : 'Alarm');
-            } else if (state.snoozedUntil) {
+            } else if (state.snoozed) {
                 text = 'Snoozed';
-                left = 'in ' + formatDuration(state.left);
             } else {
                 text = a.countdown !== null ? a.label || 'Timer'
                     : (a.label ? a.label + ' · ' : '') + formatTimeOfDay(a.time, this.options.digital.hour12);
-                left = 'in ' + formatDuration(state.left);
             }
             setText(badge.text, text);
-            setText(badge.left, left);
-            if (badge.ringing !== ringing) {
-                badge.ringing = ringing;
-                if (ringing) badge.node.setAttribute('role', 'alert'); else badge.node.removeAttribute('role');
+            setText(badge.left, ringing ? '' : 'in ' + formatDuration(Math.max(0, Math.round((state.target - now) / 1000))));
+            // Announce the alarm once when it starts, not again when the clock is redrawn.
+            if (state.announce) {
+                state.announce = false;
+                badge.node.setAttribute('role', 'alert');
+            } else if (!ringing) {
+                badge.node.removeAttribute('role');
             }
         }
 
@@ -981,20 +1032,28 @@
         }
 
         _tick(now, force) {
-            if (!this.root || (!force && !this.root.isConnected)) return;
+            if (!this.root) return;
+            // A clock outside the page isn't drawn, but its alarm keeps time.
+            const visible = force || this.root.isConnected;
+            if (!visible && !this._alarm) return;
             const second = Math.floor(now / 1000);
             const changed = second !== this._second;
-            if (!changed && !this.smooth) return;
+            if (!changed && !(this.smooth && visible)) return;
             if (changed) {
                 this._second = second;
                 this._time = wallTime(now, this.options.timeZone);
-                this._checkAlarm(now);
+                // Once per second, also when the clock is redrawn within the same second.
+                if (second !== this._alarmSecond) {
+                    this._alarmSecond = second;
+                    this._checkAlarm(now);
+                }
                 this._showAlarm(now);
             }
+            if (!visible) return;
 
             const t = {
                 h: this._time.h, m: this._time.m, s: this._time.s, ms: now - second * 1000, now: now, changed: changed,
-                alarm: this._alarm ? this._alarm.at : null
+                alarm: this._alarm && !this._alarm.done ? this._alarm.at : null
             };
             this.parts.forEach(function (part) { part.update(t); });
 

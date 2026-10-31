@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.1 (2026-10-31)
+
+Alarm fixes:
+
+- Time alarms are now set to an exact moment, so daylight saving changes, a computer clock that is set back and a new `timeZone` no longer make them ring at the wrong time.
+- Smooth clocks really keep ticking in a tab that is hidden, so their alarms go off there.
+- `setOptions({ alarm: { ... } })` merges the alarm like other options again; `setAlarm()` replaces it. Changing only the label or sound keeps a countdown running. An alarm without `time` or `countdown` now gives a warning.
+- `time` also accepts seconds since midnight, so `clock.options.alarm` can be passed back in.
+- Countdowns such as `'100:00'` (mm:ss) work; out-of-range values such as `'5:75'` give a warning.
+- A blocked custom sound is tried again every second while the alarm rings.
+- A clock removed from the page stays silent, and its alarm still stops after `ringFor`.
+- Redrawing a ringing clock no longer beeps twice or announces the alarm again; the caption is no longer read twice by screen readers.
+- The previews on the overview page can't make sound, and the timer example only starts when you pick a preset.
+
 ## 1.1.0 (2026-10-31)
 
 - New `alarm` option: ring at a time of day (`time: '07:00'`) or when a countdown ends (`countdown: '10m'`). It can repeat, beep or play your own sound, and snooze. A badge shows when it goes off, and analog dials get an alarm hand.
